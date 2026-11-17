@@ -55,25 +55,25 @@ $currentPage = 'offres';
                         <div class="top"><span class="badge badge-orange">Stage</span><span class="price">300 TND / mois</span></div>
                         <h3>Stage en design graphique</h3>
                         <div class="meta"><span>Agence Digitale Sfax</span><span>Sfax</span><span>Jusqu'au 15/12/2026</span></div>
-                        <a href="#" class="btn btn-dark btn-sm" style="align-self:flex-start">Voir l'offre</a>
+                        <a href="index.php?page=offre-detail" class="btn btn-dark btn-sm" style="align-self:flex-start">Voir l'offre</a>
                     </article>
                     <article class="card mission-card">
                         <div class="top"><span class="badge ">Emploi</span><span class="price">1 400 TND / mois</span></div>
                         <h3>Développeur web junior (PHP, MySQL)</h3>
                         <div class="meta"><span>Agence Digitale Sfax</span><span>Sfax</span><span>Jusqu'au 31/12/2026</span></div>
-                        <a href="#" class="btn btn-dark btn-sm" style="align-self:flex-start">Voir l'offre</a>
+                        <a href="index.php?page=offre-detail" class="btn btn-dark btn-sm" style="align-self:flex-start">Voir l'offre</a>
                     </article>
                     <article class="card mission-card">
                         <div class="top"><span class="badge badge-orange">Stage</span><span class="price">À négocier</span></div>
                         <h3>Stage community manager</h3>
                         <div class="meta"><span>Agence Digitale Sfax</span><span>Sfax</span><span>Jusqu'au —</span></div>
-                        <a href="#" class="btn btn-dark btn-sm" style="align-self:flex-start">Voir l'offre</a>
+                        <a href="index.php?page=offre-detail" class="btn btn-dark btn-sm" style="align-self:flex-start">Voir l'offre</a>
                     </article>
                     <article class="card mission-card">
                         <div class="top"><span class="badge ">Emploi</span><span class="price">1 100 TND / mois</span></div>
                         <h3>Assistant marketing digital</h3>
                         <div class="meta"><span>Start-up Ariana</span><span>Ariana</span><span>Jusqu'au 20/12/2026</span></div>
-                        <a href="#" class="btn btn-dark btn-sm" style="align-self:flex-start">Voir l'offre</a>
+                        <a href="index.php?page=offre-detail" class="btn btn-dark btn-sm" style="align-self:flex-start">Voir l'offre</a>
                     </article>
                     </div>
                 </div>

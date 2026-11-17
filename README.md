@@ -19,7 +19,8 @@ Plateforme web de freelance pour les étudiants tunisiens, réalisée dans le ca
 - Publication de missions par catégorie, avec budget, délai et ville
 - Candidatures des étudiants aux missions et paiement sécurisé (bloqué puis libéré)
 - Offres de stage et d'emploi publiées par les entreprises
-- Back office : gestion des litiges et des suspensions de comptes
+- Formations courtes par catégorie pour les étudiants
+- Back office : validation et suspension des comptes, vérification des entreprises, gestion des paiements et des formations
 
 ## Table des Matières
 - [Modules et répartition](#modules-et-répartition)
@@ -37,22 +38,22 @@ La table **Utilisateur** est commune et réalisée par les 5 membres. Chaque mem
 
 | Module | Responsable | Entités | Jointure | Cas d'utilisation |
 |---|---|---|---|---|
-| Commun | Toute l'équipe | Utilisateur | – | S'inscrire, se connecter, gérer son profil |
-| P1 · Espace étudiant | Membre 1 | Competence, Realisation | `realisation.id_competence` → `competence` | Ajouter une compétence, publier une réalisation, consulter les offres d'emploi, postuler à une mission |
-| P2 · Espace client | Membre 2 | Categorie, Mission | `mission.id_categorie` → `categorie` | Publier une mission, choisir une catégorie, consulter les candidatures |
-| P3 · Espace recruteur | Membre 3 | Entreprise, Offre_emploi | `offre_emploi.id_entreprise` → `entreprise` | Gérer les informations de l'entreprise, publier une offre d'emploi |
-| P4 · Missions et paiement | Membre 4 | Candidature, Paiement | `paiement.id_candidature` → `candidature` | Gérer les candidatures, gérer les paiements |
-| P5 · Administration | Membre 5 | Litige, Suspension | `suspension.id_litige` → `litige` | Gérer les litiges, les suspensions et les décisions |
+| Commun | Toute l'équipe | Utilisateur | – | S'inscrire (choisir le type de compte), se connecter, gérer son profil, se déconnecter · admin : gérer les utilisateurs (valider, suspendre) |
+| P1 · Portfolio | Membre 1 | Competence, Realisation | `realisation.id_competence` → `competence` | Étudiant : gérer ses réalisations (choisir une compétence) · admin : gérer les compétences |
+| P2 · Missions | Membre 2 | Categorie, Mission | `mission.id_categorie` → `categorie` | Étudiant : consulter et rechercher les missions · client : publier une mission (choisir une catégorie) · admin : gérer les catégories, modérer les missions |
+| P3 · Recrutement | Membre 3 | Entreprise, Offre_emploi | `offre_emploi.id_entreprise` → `entreprise` | Étudiant : consulter les offres d'emploi · recruteur : gérer son entreprise, publier une offre d'emploi · admin : vérifier les entreprises |
+| P4 · Candidatures et paiements | Membre 4 | Candidature, Paiement | `paiement.id_candidature` → `candidature` | Étudiant : postuler à une mission, suivre ses candidatures · client : choisir un candidat, payer une mission · admin : gérer les paiements |
+| P5 · Formations | Membre 5 | Categorie_formation, Formation | `formation.id_categorie_formation` → `categorie_formation` | Étudiant : consulter et rechercher les formations · admin : gérer les formations et leurs catégories |
 
 ## Diagrammes
 
 ### Diagramme de cas d'utilisation
 
-![Diagramme de cas d'utilisation](docs/diagramme-cas-utilisation.jpg)
+![Diagramme de cas d'utilisation](docs/diagramme-cas-utilisation.png)
 
-### Diagramme de classes
+### Schéma de la base de données
 
-![Diagramme de classes UML](docs/diagramme-classes.jpg)
+![Schéma de la base de données](docs/schema-base-de-donnees.png)
 
 ## Base de données
 
@@ -134,11 +135,11 @@ Nous remercions tous ceux qui ont contribué à ce projet !
 
 Les personnes suivantes ont contribué à ce projet :
 
-- [Membre 1](https://github.com/utilisateur1) – Module P1 · Espace étudiant (Competence, Realisation)
-- [Membre 2](https://github.com/utilisateur2) – Module P2 · Espace client (Categorie, Mission)
-- [Membre 3](https://github.com/utilisateur3) – Module P3 · Espace recruteur (Entreprise, Offre_emploi)
-- [Membre 4](https://github.com/utilisateur4) – Module P4 · Missions et paiement (Candidature, Paiement)
-- [Membre 5](https://github.com/utilisateur5) – Module P5 · Administration (Litige, Suspension)
+- [Membre 1](https://github.com/utilisateur1) – Module P1 · Portfolio (Competence, Realisation)
+- [Membre 2](https://github.com/utilisateur2) – Module P2 · Missions (Categorie, Mission)
+- [Membre 3](https://github.com/utilisateur3) – Module P3 · Recrutement (Entreprise, Offre_emploi)
+- [Membre 4](https://github.com/utilisateur4) – Module P4 · Candidatures et paiements (Candidature, Paiement)
+- [Membre 5](https://github.com/utilisateur5) – Module P5 · Formations (Categorie_formation, Formation)
 
 Si vous souhaitez contribuer, suivez les étapes ci-dessous pour faire un **fork**, créer une nouvelle branche et soumettre une **pull request**.
 

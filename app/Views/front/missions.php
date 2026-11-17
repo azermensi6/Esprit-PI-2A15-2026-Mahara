@@ -65,37 +65,37 @@ $currentPage = 'missions';
                         <div class="top"><span class="badge ">Réseaux sociaux</span><span class="price">120 TND</span></div>
                         <h3>Créer la page Facebook d'une pâtisserie</h3>
                         <div class="meta"><span>La Marsa</span><span>3 jours</span><span>Débutant</span></div>
-                        <a href="#" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
+                        <a href="index.php?page=postuler" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
                     </article>
                     <article class="card mission-card">
                         <div class="top"><span class="badge ">Design</span><span class="price">80 TND</span></div>
                         <h3>Logo pour un salon de coiffure</h3>
                         <div class="meta"><span>Sousse</span><span>5 jours</span><span>Débutant</span></div>
-                        <a href="#" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
+                        <a href="index.php?page=postuler" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
                     </article>
                     <article class="card mission-card">
                         <div class="top"><span class="badge ">Développement</span><span class="price">350 TND</span></div>
                         <h3>Site vitrine pour un artisan potier</h3>
                         <div class="meta"><span>Nabeul</span><span>2 semaines</span><span>Confirmé</span></div>
-                        <a href="#" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
+                        <a href="index.php?page=postuler" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
                     </article>
                     <article class="card mission-card">
                         <div class="top"><span class="badge ">Traduction</span><span class="price">80 TND</span></div>
                         <h3>Traduire une plaquette de 4 pages</h3>
                         <div class="meta"><span>Tunis</span><span>4 jours</span><span>Intermédiaire</span></div>
-                        <a href="#" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
+                        <a href="index.php?page=postuler" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
                     </article>
                     <article class="card mission-card">
                         <div class="top"><span class="badge badge-orange">Mission Ville</span><span class="price">150 TND</span></div>
                         <h3>Enquête de terrain sur le tri des déchets</h3>
                         <div class="meta"><span>Sfax</span><span>1 semaine</span><span>Débutant</span></div>
-                        <a href="#" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
+                        <a href="index.php?page=postuler" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
                     </article>
                     <article class="card mission-card">
                         <div class="top"><span class="badge ">Cours particuliers</span><span class="price">60 TND</span></div>
                         <h3>Soutien en maths pour un élève de 9e</h3>
                         <div class="meta"><span>Ariana</span><span>4 séances</span><span>Intermédiaire</span></div>
-                        <a href="#" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
+                        <a href="index.php?page=postuler" class="btn btn-blue btn-sm" style="align-self:flex-start">Postuler</a>
                     </article>
                     </div>
                     <nav class="pagination" aria-label="Pages"><a href="#" class="active">1</a><a href="#">2</a><a href="#">3</a></nav>

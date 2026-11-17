@@ -1,6 +1,18 @@
 <?php
 // $currentPage est fourni par le Controller (voir app/Controllers/Controller.php)
 $currentPage = $currentPage ?? 'dashboard';
+
+// Un lien par module : il reste actif sur toutes les pages (listes et formulaires) du module
+$modules = [
+    ['label' => 'Utilisateurs',               'href' => 'admin-utilisateurs',         'pages' => ['admin-utilisateurs', 'admin-utilisateur-form'], 'count' => 8],
+    ['label' => 'Compétences et réalisations', 'href' => 'admin-competences',          'pages' => ['admin-competences', 'admin-competence-form', 'admin-realisations', 'admin-realisation-form'], 'count' => null],
+    ['label' => 'Catégories et missions',      'href' => 'admin-missions',             'pages' => ['admin-categories', 'admin-categorie-form', 'admin-missions', 'admin-mission-form'], 'count' => 5],
+    ['label' => 'Entreprises',                 'href' => 'admin-entreprises',          'pages' => ['admin-entreprises', 'admin-entreprise-form'], 'count' => 2],
+    ['label' => 'Paiements',                   'href' => 'admin-paiements',            'pages' => ['admin-paiements', 'admin-paiement-form'], 'count' => null],
+    ['label' => 'Formations',                  'href' => 'admin-formations',           'pages' => ['admin-categories-formation', 'admin-categorie-formation-form', 'admin-formations', 'admin-formation-form'], 'count' => null],
+];
+$pagesModules = array_merge(...array_column($modules, 'pages'));
+$pagesTemplate = ['blank-page', 'signin'];
 ?>
     <!-- ======== sidebar-nav start =========== -->
     <aside class="sidebar-nav-wrapper">
@@ -20,41 +32,35 @@ $currentPage = $currentPage ?? 'dashboard';
           <li class="nav-item nav-item-has-children">
             <a
               href="#0"
-              class="<?= isCollapsed(['admin-missions'], $currentPage) ?>"
+              class="<?= isCollapsed($pagesModules, $currentPage) ?>"
               data-bs-toggle="collapse"
               data-bs-target="#ddmenu_1"
               aria-controls="ddmenu_1"
-              aria-expanded="<?= groupIsExpanded(['admin-missions'], $currentPage) ?>"
+              aria-expanded="<?= groupIsExpanded($pagesModules, $currentPage) ?>"
               aria-label="Ouvrir le menu Modules"
             >
               <svg class="icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="text">Modules</span>
             </a>
-            <ul id="ddmenu_1" class="collapse <?= isOpen(['admin-missions'], $currentPage) ?> dropdown-nav">
-              <!-- Chaque membre remplace son # par index.php?page=... quand sa page est prête -->
-              <li><a href="#"><span class="text">Utilisateurs</span></a></li>
-              <li><a href="#"><span class="text">Compétences et réalisations</span></a></li>
-              <li><a href="index.php?page=admin-missions" class="<?= isActive('admin-missions', $currentPage) ?>"><span class="text">Catégories et missions</span><span class="count">5</span></a></li>
-              <li><a href="#"><span class="text">Entreprises et offres</span></a></li>
-              <li><a href="#"><span class="text">Candidatures et paiements</span></a></li>
-              <li><a href="#"><span class="text">Litiges et suspensions</span><span class="count">3</span></a></li>
+            <ul id="ddmenu_1" class="collapse <?= isOpen($pagesModules, $currentPage) ?> dropdown-nav">
+<?php foreach ($modules as $m): ?>
+              <li><a href="index.php?page=<?= $m['href'] ?>" class="<?= in_array($currentPage, $m['pages'], true) ? 'active' : '' ?>"><span class="text"><?= $m['label'] ?></span><?php if ($m['count']): ?><span class="count"><?= $m['count'] ?></span><?php endif; ?></a></li>
+<?php endforeach; ?>
             </ul>
           </li>
 
           <li class="nav-item nav-item-has-children">
             <a
               href="#0"
-              class="<?= isCollapsed(['admin-missions', 'admin-mission-form', 'blank-page', 'signin'], $currentPage) ?>"
+              class="<?= isCollapsed($pagesTemplate, $currentPage) ?>"
               data-bs-toggle="collapse"
               data-bs-target="#ddmenu_2"
               aria-controls="ddmenu_2"
-              aria-expanded="<?= groupIsExpanded(['admin-missions', 'admin-mission-form', 'blank-page', 'signin'], $currentPage) ?>"
+              aria-expanded="<?= groupIsExpanded($pagesTemplate, $currentPage) ?>"
               aria-label="Ouvrir le menu Pages"
             >
               <svg class="icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg><span class="text">Pages du template</span>
             </a>
-            <ul id="ddmenu_2" class="collapse <?= isOpen(['admin-missions', 'admin-mission-form', 'blank-page', 'signin'], $currentPage) ?> dropdown-nav">
-              <li><a href="index.php?page=admin-missions" class="<?= isActive('admin-missions', $currentPage) ?>">Missions (liste)</a></li>
-              <li><a href="index.php?page=admin-mission-form" class="<?= isActive('admin-mission-form', $currentPage) ?>">Ajouter une mission</a></li>
+            <ul id="ddmenu_2" class="collapse <?= isOpen($pagesTemplate, $currentPage) ?> dropdown-nav">
               <li><a href="index.php?page=blank-page" class="<?= isActive('blank-page', $currentPage) ?>">Page vide</a></li>
               <li><a href="index.php?page=signin" class="<?= isActive('signin', $currentPage) ?>">Connexion admin</a></li>
             </ul>

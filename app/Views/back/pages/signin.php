@@ -10,7 +10,7 @@
         </div>
         <div>
           <h1>Espace administration</h1>
-          <p>Validez les comptes, modérez les missions et traitez les litiges de la plateforme.</p>
+          <p>Validez les comptes, modérez les missions, vérifiez les entreprises et gérez les formations.</p>
         </div>
         <p style="font-size:14px">&copy; 2026 Mahara</p>
       </div>

@@ -6,9 +6,9 @@
             <div class="row">
               <div>
                 <h2>Ajouter une mission</h2>
-                <p>Exemple de formulaire : ajout et modification</p>
+                <p>Ajout et modification d'une mission</p>
               </div>
-              <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="index.php?page=dashboard">Tableau de bord</a></li><li class="breadcrumb-item active" aria-current="page">Ajouter une mission</li></ol></nav>
+              <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="index.php?page=dashboard">Tableau de bord</a></li><li class="breadcrumb-item"><a href="index.php?page=admin-missions">Missions</a></li><li class="breadcrumb-item active" aria-current="page">Ajouter une mission</li></ol></nav>
             </div>
           </div>
           <!-- ========== title-wrapper end ========== -->

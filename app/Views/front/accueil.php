@@ -1,6 +1,12 @@
 <?php
 $pageTitle   = 'Mahara | Accueil';
 $currentPage = 'accueil';
+
+/**
+ * Lien vers une page réservée aux membres : connecté -> la vraie page,
+ * visiteur -> défilement vers une section de l'accueil (#ancre).
+ */
+$lien = fn(string $page, string $ancre): string => isLoggedIn() ? 'index.php?page=' . $page : '#' . $ancre;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -16,7 +22,7 @@ $currentPage = 'accueil';
     <!-- ========== Contenu spécifique de la page : début ========== -->
 
     <!-- Hero Start -->
-    <section class="hero">
+    <section class="hero" id="haut">
         <div class="container">
             <div>
                 <span class="hero-tag">La plateforme freelance des étudiants tunisiens</span>
@@ -29,8 +35,8 @@ $currentPage = 'accueil';
                 </form>
                 <div class="hero-roles">
                     <a href="index.php?page=inscription" class="btn btn-primary">Je suis étudiant</a>
-                    <a href="index.php?page=publier-mission" class="btn btn-outline">Je suis client</a>
-                    <a href="index.php?page=offres" class="btn btn-outline">Je suis recruteur</a>
+                    <a href="<?= $lien('publier-mission', 'espaces') ?>" class="btn btn-outline">Je suis client</a>
+                    <a href="<?= $lien('offres', 'espaces') ?>" class="btn btn-outline">Je suis recruteur</a>
                 </div>
             </div>
             <div class="hero-visual">
@@ -38,7 +44,7 @@ $currentPage = 'accueil';
                     <div class="top"><span class="badge">Réseaux sociaux</span><span class="price">120 TND</span></div>
                     <h3>Créer la page Facebook d'une pâtisserie</h3>
                     <div class="meta"><span>La Marsa</span><span>3 jours</span><span>Niveau débutant</span></div>
-                    <a href="index.php?page=missions" class="btn btn-blue btn-block">Postuler</a>
+                    <a href="<?= $lien('missions', 'missions-recentes') ?>" class="btn btn-blue btn-block">Postuler</a>
                 </article>
                 <div class="profile-strip">
                     <div class="avatar">YB</div>
@@ -52,7 +58,7 @@ $currentPage = 'accueil';
 
 
     <!-- Roles Start -->
-    <section class="section">
+    <section class="section" id="espaces">
         <div class="container">
             <div class="section-head"><div><h2>Un espace pour chacun</h2><p>Trois types de comptes, une seule plateforme.</p></div></div>
             <div class="grid grid-3">
@@ -68,14 +74,14 @@ $currentPage = 'accueil';
                     <h3>Client</h3>
                     <p class="text-muted">Tu as un besoin ou un problème, tu le publies et un étudiant le résout.</p>
                     <ul><li>Publie ton besoin en quelques minutes</li><li>Reçois les offres des étudiants</li><li>Paie seulement après validation</li></ul>
-                    <a href="index.php?page=publier-mission" class="btn btn-blue btn-block">Publier un besoin</a>
+                    <a href="<?= $lien('publier-mission', 'comment-ca-marche') ?>" class="btn btn-blue btn-block">Publier un besoin</a>
                 </article>
                 <article class="card role-card role-recruteur">
                     <svg class="icon" width="30" height="30" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="M15 15l6 6"/></svg>
                     <h3>Recruteur</h3>
                     <p class="text-muted">Tu cherches des talents à embaucher en stage ou en emploi.</p>
                     <ul><li>Recherche par compétence et par ville</li><li>Missions réalisées visibles</li><li>Contacte les meilleurs profils</li></ul>
-                    <a href="index.php?page=offres" class="btn btn-dark btn-block">Trouver des talents</a>
+                    <a href="<?= $lien('offres', 'competences') ?>" class="btn btn-dark btn-block">Trouver des talents</a>
                 </article>
             </div>
         </div>
@@ -84,18 +90,18 @@ $currentPage = 'accueil';
 
 
     <!-- Skills Start -->
-    <section class="section" style="padding-top:0">
+    <section class="section" id="competences" style="padding-top:0">
         <div class="container">
             <div class="section-head"><div><h2>Explore par compétence</h2><p>Des missions adaptées à ton niveau, dans ton quartier ou à distance.</p></div></div>
             <div class="grid grid-4">
-                <a href="index.php?page=missions" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6l-6 6 6 6"/><path d="M16 6l6 6-6 6"/></svg><strong>Développement web</strong><small>Sites vitrines, boutiques en ligne</small></a>
-                <a href="index.php?page=missions" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg><strong>Design graphique</strong><small>Logos, affiches, visuels</small></a>
-                <a href="index.php?page=missions" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H8l-4 4z"/></svg><strong>Réseaux sociaux</strong><small>Pages Facebook et Instagram</small></a>
-                <a href="index.php?page=missions" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3z"/><path d="M21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg><strong>Cours particuliers</strong><small>Soutien scolaire, langues</small></a>
-                <a href="index.php?page=missions" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg><strong>Traduction</strong><small>Arabe, français, anglais</small></a>
-                <a href="index.php?page=missions" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M9 10v10"/></svg><strong>Saisie et Excel</strong><small>Tableaux, données, factures</small></a>
-                <a href="index.php?page=missions" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg><strong>Vidéo et photo</strong><small>Montage, reels, retouche</small></a>
-                <a href="index.php?page=missions" class="card skill-card highlight"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M10 21v-5h4v5"/></svg><strong>Missions Ville</strong><small>Pour ta municipalité et les associations</small></a>
+                <a href="<?= $lien('missions', 'missions-recentes') ?>" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6l-6 6 6 6"/><path d="M16 6l6 6-6 6"/></svg><strong>Développement web</strong><small>Sites vitrines, boutiques en ligne</small></a>
+                <a href="<?= $lien('missions', 'missions-recentes') ?>" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg><strong>Design graphique</strong><small>Logos, affiches, visuels</small></a>
+                <a href="<?= $lien('missions', 'missions-recentes') ?>" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H8l-4 4z"/></svg><strong>Réseaux sociaux</strong><small>Pages Facebook et Instagram</small></a>
+                <a href="<?= $lien('missions', 'missions-recentes') ?>" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3z"/><path d="M21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg><strong>Cours particuliers</strong><small>Soutien scolaire, langues</small></a>
+                <a href="<?= $lien('missions', 'missions-recentes') ?>" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg><strong>Traduction</strong><small>Arabe, français, anglais</small></a>
+                <a href="<?= $lien('missions', 'missions-recentes') ?>" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M9 10v10"/></svg><strong>Saisie et Excel</strong><small>Tableaux, données, factures</small></a>
+                <a href="<?= $lien('missions', 'missions-recentes') ?>" class="card skill-card"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></svg><strong>Vidéo et photo</strong><small>Montage, reels, retouche</small></a>
+                <a href="<?= $lien('missions', 'missions-recentes') ?>" class="card skill-card highlight"><svg class="icon" width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M10 21v-5h4v5"/></svg><strong>Missions Ville</strong><small>Pour ta municipalité et les associations</small></a>
             </div>
         </div>
     </section>
@@ -103,7 +109,7 @@ $currentPage = 'accueil';
 
 
     <!-- Steps Start -->
-    <section class="section section-alt">
+    <section class="section section-alt" id="comment-ca-marche">
         <div class="container">
             <div class="section-head"><h2>Comment ça marche</h2></div>
             <div class="grid grid-3">
@@ -117,9 +123,9 @@ $currentPage = 'accueil';
 
 
     <!-- Missions Start -->
-    <section class="section">
+    <section class="section" id="missions-recentes">
         <div class="container">
-            <div class="section-head"><h2>Missions récentes</h2><a href="index.php?page=missions" style="font-weight:800">Voir toutes les missions</a></div>
+            <div class="section-head"><h2>Missions récentes</h2><a href="<?= $lien('missions', 'missions-ville') ?>" style="font-weight:800">Voir toutes les missions</a></div>
             <div class="grid grid-3">
                     <article class="card mission-card">
                         <div class="top"><span class="badge ">Design</span><span class="price">80 TND</span></div>
@@ -143,13 +149,13 @@ $currentPage = 'accueil';
 
 
     <!-- Smart City Start -->
-    <section class="section city-band">
+    <section class="section city-band" id="missions-ville">
         <div class="container">
             <div>
                 <span class="badge badge-orange" style="margin-bottom:14px">Ville intelligente</span>
                 <h2>Les talents étudiants au service de la ville</h2>
                 <p style="margin:16px 0 24px">Municipalités et associations publient des missions citoyennes : enquêtes de terrain, aide numérique aux habitants, cartographie de quartier.</p>
-                <a href="index.php?page=missions" class="btn btn-outline">Découvrir les Missions Ville</a>
+                <a href="<?= $lien('missions', 'rejoindre') ?>" class="btn btn-outline">Découvrir les Missions Ville</a>
             </div>
             <div class="grid grid-2">
                 <div class="city-tile"><strong>Missions par quartier</strong><span>Trouver un étudiant près de chez soi.</span></div>
@@ -163,15 +169,15 @@ $currentPage = 'accueil';
 
 
     <!-- CTA Start -->
-    <section class="section">
+    <section class="section" id="rejoindre">
         <div class="container">
             <div class="cta-box">
                 <h2>Ton expérience commence avant ton diplôme</h2>
                 <p>Inscription gratuite pour les étudiants, avec ton email universitaire.</p>
                 <div class="actions">
                     <a href="index.php?page=inscription" class="btn btn-dark">Créer mon profil</a>
-                    <a href="index.php?page=publier-mission" class="btn btn-outline">Publier un besoin</a>
-                    <a href="index.php?page=offres" class="btn btn-outline">Recruter un talent</a>
+                    <a href="<?= $lien('publier-mission', 'espaces') ?>" class="btn btn-outline">Publier un besoin</a>
+                    <a href="<?= $lien('offres', 'espaces') ?>" class="btn btn-outline">Recruter un talent</a>
                 </div>
             </div>
         </div>

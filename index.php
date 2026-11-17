@@ -3,6 +3,7 @@
  * Point d'entrée unique de Mahara.
  * Exemple : index.php?page=missions  ->  App\Controllers\MissionsController::index()
  */
+session_start();
 require_once __DIR__ . '/app/helpers.php';
 
 // Chargement automatique des classes : App\Controllers\X -> app/Controllers/X.php

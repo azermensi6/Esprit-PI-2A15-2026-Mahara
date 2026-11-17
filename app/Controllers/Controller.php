@@ -52,6 +52,18 @@ abstract class Controller
         require_once __DIR__ . '/../Views/front/' . $view . '.php';
     }
 
+    /**
+     * Front office : réservé aux utilisateurs connectés.
+     * Sinon, redirection vers la connexion puis retour sur $page après login.
+     */
+    protected function requireLogin(string $page): void
+    {
+        if (!isLoggedIn()) {
+            header('Location: index.php?page=connexion&redirect=' . urlencode($page));
+            exit;
+        }
+    }
+
     /** Exécute une vue et renvoie son HTML sous forme de texte */
     protected function capture(string $file, array $data = []): string
     {

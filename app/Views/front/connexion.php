@@ -18,12 +18,16 @@ $currentPage = 'connexion';
     <!-- Auth Start -->
     <section class="auth-wrap">
         <div class="container">
-            <form class="card auth-card" style="margin:0 auto" action="#" method="post">
+            <form class="card auth-card" style="margin:0 auto" action="index.php?page=connexion" method="post">
+                <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect ?? 'accueil') ?>">
                 <h2 style="margin-bottom:6px">Connexion</h2>
                 <p class="text-muted" style="margin-bottom:22px">Content de te revoir sur Mahara.</p>
+<?php if (!empty($erreur)): ?>
+                <p role="alert" style="background:#fdecec;color:#a61b1b;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-weight:600"><?= htmlspecialchars($erreur) ?></p>
+<?php endif; ?>
                 <div class="form-group" style="margin-bottom:16px">
                     <label for="email">Email</label>
-                    <input id="email" name="email" type="email" class="form-control" placeholder="prenom.nom@universite.tn" required>
+                    <input id="email" name="email" type="email" class="form-control" placeholder="prenom.nom@universite.tn" value="<?= htmlspecialchars($email ?? '') ?>" required>
                 </div>
                 <div class="form-group" style="margin-bottom:12px">
                     <label for="mdp">Mot de passe</label>
@@ -34,7 +38,7 @@ $currentPage = 'connexion';
                     <a href="#" style="font-weight:700">Mot de passe oublié ?</a>
                 </div>
                 <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
-                <p class="text-muted" style="margin-top:18px;text-align:center">Pas encore de compte ? <a href="index.php?page=inscription" style="font-weight:800">Inscris-toi</a></p>
+                <p class="text-muted" style="margin-top:18px;text-align:center">Pas encore de compte ? <a href="index.php?page=inscription&amp;redirect=<?= urlencode($redirect ?? 'accueil') ?>" style="font-weight:800">Inscris-toi</a></p>
             </form>
         </div>
     </section>

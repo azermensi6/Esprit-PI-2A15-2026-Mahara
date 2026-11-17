@@ -18,6 +18,32 @@
       var open = collapse.classList.toggle('open');
       toggler.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
+    // Fermer le menu mobile après un clic sur un lien
+    collapse.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        collapse.classList.remove('open');
+        toggler.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
+  // 2b. Accueil : surligner dans la navbar la section visible à l'écran
+  var sectionLinks = document.querySelectorAll('.navbar-nav a.nav-link[href^="#"]');
+  if (sectionLinks.length && 'IntersectionObserver' in window) {
+    var linkFor = {};
+    sectionLinks.forEach(function (link) { linkFor[link.getAttribute('href').slice(1)] = link; });
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        sectionLinks.forEach(function (l) { l.classList.remove('active'); });
+        var link = linkFor[entry.target.id];
+        if (link) link.classList.add('active');
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    Object.keys(linkFor).forEach(function (id) {
+      var section = document.getElementById(id);
+      if (section) observer.observe(section);
+    });
   }
 
   // 3. Bouton « retour en haut »
@@ -31,6 +57,13 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
+
+  // 3b. Boutons « Supprimer », « Retirer »… : demander confirmation
+  document.querySelectorAll('[data-confirm]').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      if (!window.confirm(btn.getAttribute('data-confirm'))) e.preventDefault();
+    });
+  });
 
   // 4. Inscription : carte du type de compte sélectionnée
   var options = document.querySelectorAll('.role-option');

@@ -6,7 +6,7 @@
             <div class="row">
               <div>
                 <h2>Missions</h2>
-                <p>Exemple de liste : à dupliquer pour chaque table de votre module</p>
+                <p>Missions publiées par les clients · données d'exemple</p>
               </div>
               <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="index.php?page=dashboard">Tableau de bord</a></li><li class="breadcrumb-item active" aria-current="page">Missions</li></ol></nav>
             </div>
@@ -16,6 +16,10 @@
           <!-- ========== tables-wrapper start ========== -->
           <div class="tables-wrapper">
             <div class="card-style mb-30">
+              <div class="left" style="margin-bottom:16px">
+                <a href="index.php?page=admin-categories" class="main-btn btn-sm light-btn">Catégories</a>
+                <a href="index.php?page=admin-missions" class="main-btn btn-sm primary-btn">Missions</a>
+              </div>
               <div class="table-toolbar">
                 <div class="left">
                   <label for="t-search" style="position:absolute;left:-9999px">Rechercher</label>

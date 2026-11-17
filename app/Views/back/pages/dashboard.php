@@ -22,7 +22,7 @@
 
           <div class="row-grid cols-wide mb-30">
             <div class="card-style">
-              <div class="card-head"><h3>Comptes à valider</h3><a href="index.php?page=admin-missions">Voir les 12</a></div>
+              <div class="card-head"><h3>Comptes à valider</h3><a href="index.php?page=admin-utilisateurs">Voir les 12</a></div>
               <div class="table-wrapper">
                 <table class="table">
                   <thead><tr><th>Nom</th><th>Type</th><th>Justificatif</th><th style="text-align:right">Action</th></tr></thead>
@@ -76,10 +76,10 @@
               <div class="list-row"><div><strong>Rédaction de 10 fiches produit</strong><small>Client : Épicerie Bio Ariana · 150 TND · Ariana</small></div><span class="status-btn warning-btn">Signalée</span></div>
             </div>
             <div class="card-style">
-              <div class="card-head"><h3>Litiges ouverts</h3><a href="index.php?page=admin-missions">Voir les 3</a></div>
-              <div class="list-row"><div><strong>Livraison en retard</strong><small>Amine K. et Restaurant El Medina · 200 TND bloqués</small></div><a href="index.php?page=admin-mission-form" class="main-btn orange-btn btn-sm">Traiter</a></div>
-              <div class="list-row"><div><strong>Travail jugé incomplet</strong><small>Sarra M. et Agence Digitale Sfax · 350 TND bloqués</small></div><a href="index.php?page=admin-mission-form" class="main-btn orange-btn btn-sm">Traiter</a></div>
-              <div class="list-row"><div><strong>Paiement non libéré</strong><small>Omar J. et Boutique Nour · 90 TND bloqués</small></div><a href="index.php?page=admin-mission-form" class="main-btn orange-btn btn-sm">Traiter</a></div>
+              <div class="card-head"><h3>Entreprises à vérifier</h3><a href="index.php?page=admin-entreprises">Voir les 2</a></div>
+              <div class="list-row"><div><strong>Start-up Ariana</strong><small>Logiciels · Ariana · 1 offre en attente</small></div><a href="index.php?page=admin-entreprise-form" class="main-btn orange-btn btn-sm">Vérifier</a></div>
+              <div class="list-row"><div><strong>Studio Créatif Nabeul</strong><small>Design · Nabeul · aucune offre</small></div><a href="index.php?page=admin-entreprise-form" class="main-btn orange-btn btn-sm">Vérifier</a></div>
+              <div class="list-row"><div><strong>Formations à venir</strong><small>Initiation à Canva et Figma · 01/12/2026</small></div><a href="index.php?page=admin-formations" class="main-btn light-btn btn-sm">Formations</a></div>
             </div>
           </div>
         </div>

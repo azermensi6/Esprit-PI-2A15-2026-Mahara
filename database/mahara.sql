@@ -83,6 +83,7 @@ CREATE TABLE entreprise (
     secteur       VARCHAR(60),
     ville         VARCHAR(60),
     site_web      VARCHAR(255),
+    statut        ENUM('en_attente','verifiee','refusee') NOT NULL DEFAULT 'en_attente',  -- vérifiée par l'admin
     id_recruteur  INT NOT NULL,                      -- lien avec utilisateur
     FOREIGN KEY (id_recruteur) REFERENCES utilisateur(id_utilisateur) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -129,34 +130,28 @@ CREATE TABLE paiement (
 ) ENGINE=InnoDB;
 
 -- =====================================================================
---  PERSONNE 5 : ADMINISTRATION
---  litige  1 ---- N  suspension
+--  PERSONNE 5 : FORMATIONS
+--  categorie_formation  1 ---- N  formation
 -- =====================================================================
 
-CREATE TABLE litige (
-    id_litige      INT AUTO_INCREMENT PRIMARY KEY,
-    motif          VARCHAR(120) NOT NULL,
-    description    TEXT,
-    statut         ENUM('ouvert','en_cours','resolu') NOT NULL DEFAULT 'ouvert',
-    decision       TEXT,
-    date_ouverture DATETIME DEFAULT CURRENT_TIMESTAMP,
-    id_paiement    INT NOT NULL,                     -- lien avec le module de la personne 4
-    id_ouvert_par  INT NOT NULL,                     -- lien avec utilisateur (client ou étudiant)
-    id_admin       INT,                              -- l'admin qui traite (NULL tant que personne)
-    FOREIGN KEY (id_paiement)   REFERENCES paiement(id_paiement),
-    FOREIGN KEY (id_ouvert_par) REFERENCES utilisateur(id_utilisateur),
-    FOREIGN KEY (id_admin)      REFERENCES utilisateur(id_utilisateur)
+CREATE TABLE categorie_formation (
+    id_categorie_formation INT AUTO_INCREMENT PRIMARY KEY,
+    nom                    VARCHAR(80)  NOT NULL UNIQUE,
+    description            VARCHAR(255)
 ) ENGINE=InnoDB;
 
-CREATE TABLE suspension (
-    id_suspension  INT AUTO_INCREMENT PRIMARY KEY,
-    motif          VARCHAR(255) NOT NULL,
-    date_debut     DATE NOT NULL,
-    date_fin       DATE,                             -- NULL = suspension définitive
-    id_litige      INT,                              -- jointure du module (NULL si suspension sans litige)
-    id_utilisateur INT NOT NULL,                     -- le compte suspendu
-    FOREIGN KEY (id_litige)      REFERENCES litige(id_litige),
-    FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur) ON DELETE CASCADE
+CREATE TABLE formation (
+    id_formation           INT AUTO_INCREMENT PRIMARY KEY,
+    titre                  VARCHAR(150) NOT NULL,
+    description            TEXT,
+    niveau                 ENUM('debutant','intermediaire','avance') NOT NULL DEFAULT 'debutant',
+    duree_heures           INT NOT NULL,
+    mode                   ENUM('en_ligne','presentiel','hybride') NOT NULL DEFAULT 'en_ligne',
+    prix                   DECIMAL(10,2) NOT NULL DEFAULT 0,   -- en dinars (TND), 0 = gratuite
+    date_debut             DATE,
+    date_creation          DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id_categorie_formation INT NOT NULL,                       -- jointure du module
+    FOREIGN KEY (id_categorie_formation) REFERENCES categorie_formation(id_categorie_formation)
 ) ENGINE=InnoDB;
 
 -- =====================================================================
@@ -203,8 +198,8 @@ INSERT INTO mission (titre, description, budget, delai_jours, ville, statut, id_
 ('Traduire une plaquette',                   'Plaquette de 4 pages, français vers anglais',       80.00, 4,  'Tunis',    'ouverte',  4, 6);  -- 4
 
 -- Personne 3
-INSERT INTO entreprise (nom, secteur, ville, site_web, id_recruteur) VALUES
-('Agence Digitale Sfax', 'Marketing digital', 'Sfax', 'https://digitalsfax.tn', 7);   -- 1
+INSERT INTO entreprise (nom, secteur, ville, site_web, statut, id_recruteur) VALUES
+('Agence Digitale Sfax', 'Marketing digital', 'Sfax', 'https://digitalsfax.tn', 'verifiee', 7);   -- 1
 
 INSERT INTO offre_emploi (titre, type_offre, description, ville, salaire, date_publication, date_limite, id_entreprise) VALUES
 ('Stage en design graphique',     'stage',  'Stage de 2 mois, création de visuels',      'Sfax', 300.00,  '2026-11-01', '2026-12-15', 1),
@@ -224,12 +219,18 @@ INSERT INTO paiement (montant, mode_paiement, statut, id_candidature) VALUES
 ( 90.00, 'virement', 'libere', 3);   -- 2 : mission terminée, argent versé à l'étudiante
 
 -- Personne 5
-INSERT INTO litige (motif, description, statut, decision, id_paiement, id_ouvert_par, id_admin) VALUES
-('Livraison en retard', 'Les publications ne sont pas en ligne après 3 jours', 'en_cours', NULL, 1, 5, 1);
+INSERT INTO categorie_formation (nom, description) VALUES
+('Design',            'Outils et bases du design graphique'),        -- 1
+('Développement web', 'HTML, CSS, JavaScript, PHP'),                 -- 2
+('Marketing digital', 'Réseaux sociaux et communication'),           -- 3
+('Langues',           'Anglais et français professionnels');         -- 4
 
-INSERT INTO suspension (motif, date_debut, date_fin, id_litige, id_utilisateur) VALUES
-('Retard répété sans prévenir le client', '2026-11-16', '2026-11-30', 1, 8),
-('Faux justificatif étudiant',            '2026-11-17', NULL,         NULL, 4);
+INSERT INTO formation (titre, description, niveau, duree_heures, mode, prix, date_debut, id_categorie_formation) VALUES
+('Initiation à Canva et Figma',        'Créer ses premiers visuels et maquettes',      'debutant',      12, 'en_ligne',   0.00,  '2026-12-01', 1),
+('PHP et MySQL pour débutants',        'Construire un site dynamique pas à pas',       'debutant',      30, 'hybride',    60.00, '2026-12-05', 2),
+('JavaScript moderne',                 'DOM, événements et requêtes fetch',            'intermediaire', 24, 'en_ligne',   45.00, '2027-01-10', 2),
+('Gérer la page Facebook d''un commerce','Calendrier éditorial et publicités',         'debutant',      8,  'presentiel', 30.00, '2026-12-12', 3),
+('Anglais professionnel',              'Emails, entretiens et présentations',          'intermediaire', 20, 'en_ligne',   40.00, '2027-01-15', 4);
 
 -- =====================================================================
 --  REQUÊTES AVEC JOINTURES (une par personne + une commune)
@@ -269,8 +270,8 @@ JOIN candidature ca ON p.id_candidature = ca.id_candidature
 JOIN utilisateur u  ON ca.id_etudiant   = u.id_utilisateur
 JOIN mission     m  ON ca.id_mission    = m.id_mission;
 
--- Personne 5 : les suspensions, avec le litige qui les a causées (s'il y en a un)
-SELECT u.prenom, u.nom, s.motif, s.date_debut, s.date_fin, l.motif AS litige
-FROM suspension s
-JOIN utilisateur u ON s.id_utilisateur = u.id_utilisateur
-LEFT JOIN litige l ON s.id_litige      = l.id_litige;
+-- Personne 5 : les formations, avec leur catégorie
+SELECT f.titre, cf.nom AS categorie, f.niveau, f.duree_heures, f.mode, f.prix, f.date_debut
+FROM formation f
+JOIN categorie_formation cf ON f.id_categorie_formation = cf.id_categorie_formation
+ORDER BY f.date_debut;
