@@ -15,6 +15,18 @@ class CategorieFormation extends Model
         return self::db()->query($sql)->fetchAll();
     }
 
+    /** READ + LEFT JOIN : catégories avec le nombre de formations de chacune */
+    public static function allWithCount(): array
+    {
+        $sql = 'SELECT c.*, COUNT(f.id_formation) AS nb_formations
+                FROM categorie_formation c
+                LEFT JOIN formation f
+                  ON f.id_categorie_formation = c.id_categorie_formation
+                GROUP BY c.id_categorie_formation
+                ORDER BY c.nom';
+        return self::db()->query($sql)->fetchAll();
+    }
+
     /** READ : une catégorie par son id (false si elle n'existe pas) */
     public static function find(int $id): array|false
     {
