@@ -7,7 +7,7 @@
 return [
 
     // ---------- Front office : pages publiques ----------
-    'accueil'                 => 'PageController@accueil',
+    'accueil'                 => 'AccueilController',
     'connexion'               => 'AuthController@connexion',
     'inscription'             => 'AuthController@inscription',
     'deconnexion'             => 'AuthController@deconnexion',
@@ -18,34 +18,34 @@ return [
     'reclamation-form'        => 'ReclamationController@formulaire',
 
     // ---------- P1 · Portfolio ----------
-    'portfolio'               => 'PageController@portfolio',
-    'ajouter-realisation'     => 'PageController@ajouterRealisation',
+    'portfolio'               => 'PortfolioController',
+    'ajouter-realisation'     => 'AjouterRealisationController',
 
     // ---------- P2 · Missions ----------
-    'missions'                => 'PageController@missions',
-    'publier-mission'         => 'PageController@publierMission',
-    'mes-missions'            => 'PageController@mesMissions',
+    'missions'                => 'MissionsController',
+    'publier-mission'         => 'PublierMissionController',
+    'mes-missions'            => 'MesMissionsController',
 
     // ---------- P3 · Recrutement ----------
-    'offres'                  => 'PageController@offres',
-    'offre-detail'            => 'PageController@offreDetail',
-    'mon-entreprise'          => 'PageController@monEntreprise',
-    'publier-offre'           => 'PageController@publierOffre',
+    'offres'                  => 'OffreController@liste',
+    'offre-detail'            => 'OffreController@detail',
+    'mon-entreprise'          => 'EntrepriseController@monEntreprise',
+    'publier-offre'           => 'OffreController@formulaire',
 
     // ---------- P4 · Candidatures et paiements ----------
-    'postuler'                => 'PageController@postuler',
-    'mes-candidatures'        => 'PageController@mesCandidatures',
-    'candidatures-recues'     => 'PageController@candidaturesRecues',
-    'payer'                   => 'PageController@payer',
+    'postuler'                => 'PostulerController',
+    'mes-candidatures'        => 'MesCandidaturesController',
+    'candidatures-recues'     => 'CandidaturesRecuesController',
+    'payer'                   => 'PayerController',
 
     // ---------- P5 · Formations ----------
-    'formations'              => 'PageController@formations',
-    'formation-detail'        => 'PageController@formationDetail',
+    'formations'              => 'FormationsController',
+    'formation-detail'        => 'FormationDetailController',
 
     // ---------- Back office ----------
-    'dashboard'               => 'AdminController@dashboard',
+    'dashboard'               => 'DashboardController',
     'signin'                  => 'AuthController@signin',
-    'blank-page'              => 'AdminController@blankPage',
+    'blank-page'              => 'BlankPageController',
 
     // ---------- Back office · Commun ----------
     'admin-utilisateurs'      => 'UtilisateurController@liste',
@@ -54,28 +54,30 @@ return [
     'admin-reclamation-form'  => 'ReclamationController@traitement',
 
     // ---------- Back office · P1 ----------
-    'admin-competences'       => 'AdminController@competences',
-    'admin-competence-form'   => 'AdminController@competenceForm',
-    'admin-realisations'      => 'AdminController@realisations',
-    'admin-realisation-form'  => 'AdminController@realisationForm',
+    'admin-competences'       => 'AdminCompetencesController',
+    'admin-competence-form'   => 'AdminCompetenceFormController',
+    'admin-realisations'      => 'AdminRealisationsController',
+    'admin-realisation-form'  => 'AdminRealisationFormController',
 
     // ---------- Back office · P2 ----------
-    'admin-categories'        => 'AdminController@categories',
-    'admin-categorie-form'    => 'AdminController@categorieForm',
-    'admin-missions'          => 'AdminController@missions',
-    'admin-mission-form'      => 'AdminController@missionForm',
+    'admin-categories'        => 'AdminCategoriesController',
+    'admin-categorie-form'    => 'AdminCategorieFormController',
+    'admin-missions'          => 'AdminMissionsController',
+    'admin-mission-form'      => 'AdminMissionFormController',
 
     // ---------- Back office · P3 ----------
-    'admin-entreprises'       => 'AdminController@entreprises',
-    'admin-entreprise-form'   => 'AdminController@entrepriseForm',
+    'admin-entreprises'       => 'EntrepriseController@liste',
+    'admin-entreprise-form'   => 'EntrepriseController@formulaire',
+    'admin-offres'            => 'OffreController@adminListe',
+    'admin-offre-form'        => 'OffreController@adminFormulaire',
 
     // ---------- Back office · P4 ----------
-    'admin-paiements'         => 'AdminController@paiements',
-    'admin-paiement-form'     => 'AdminController@paiementForm',
+    'admin-paiements'         => 'AdminPaiementsController',
+    'admin-paiement-form'     => 'AdminPaiementFormController',
 
     // ---------- Back office · P5 · Formations ----------
-    'admin-categories-formation'     => 'AdminController@categoriesFormation',
-    'admin-categorie-formation-form' => 'AdminController@categorieFormationForm',
-    'admin-formations'               => 'AdminController@formations',
-    'admin-formation-form'           => 'AdminController@formationForm',
+    'admin-categories-formation'     => 'AdminCategoriesFormationController',
+    'admin-categorie-formation-form' => 'AdminCategorieFormationFormController',
+    'admin-formations'               => 'AdminFormationsController',
+    'admin-formation-form'           => 'AdminFormationFormController',
 ];
