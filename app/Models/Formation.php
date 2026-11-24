@@ -20,20 +20,54 @@ class Formation extends Model
     }
 
     /**
-     * READ + JOIN (front office) : recherche par mot-clé et/ou par catégorie.
-     * Les deux filtres sont facultatifs.
+     * READ + JOIN (front office) : recherche multicritère. Tous les filtres sont facultatifs :
+     * q (mot-clé), categorie (id), niveaux (tableau), mode, prix_max.
+     * $tri : 'date' (prochaines dates), 'prix' ou 'duree'.
      */
-    public static function search(string $motCle = '', int $idCategorie = 0): array
+    public static function search(array $filtres = [], string $tri = 'date'): array
     {
         $sql = 'SELECT f.*, c.nom AS categorie
                 FROM formation f
                 JOIN categorie_formation c
                   ON f.id_categorie_formation = c.id_categorie_formation
-                WHERE (f.titre LIKE :motCle OR f.description LIKE :motCle)
-                  AND (:idCat = 0 OR f.id_categorie_formation = :idCat)
-                ORDER BY f.date_creation DESC';
+                WHERE 1 = 1';
+        $params = [];
+
+        if (($filtres['q'] ?? '') !== '') {
+            $sql .= ' AND (f.titre LIKE :q1 OR f.description LIKE :q2)';
+            $params['q1'] = $params['q2'] = '%' . $filtres['q'] . '%';
+        }
+        if (($filtres['categorie'] ?? 0) > 0) {
+            $sql .= ' AND f.id_categorie_formation = :cat';
+            $params['cat'] = (int) $filtres['categorie'];
+        }
+        if (!empty($filtres['niveaux'])) {
+            $marques = [];
+            foreach (array_values($filtres['niveaux']) as $i => $niveau) {
+                $marques[] = ':niv' . $i;
+                $params['niv' . $i] = $niveau;
+            }
+            $sql .= ' AND f.niveau IN (' . implode(', ', $marques) . ')';
+        }
+        if (($filtres['mode'] ?? '') !== '') {
+            $sql .= ' AND f.mode = :mode';
+            $params['mode'] = $filtres['mode'];
+        }
+        if (($filtres['prix_max'] ?? '') !== '') {
+            $sql .= ' AND f.prix <= :prix_max';
+            $params['prix_max'] = $filtres['prix_max'];
+        }
+
+        // Le tri vient d'une liste fermée : jamais de valeur de l'utilisateur dans ORDER BY
+        $ordres = [
+            'date'  => 'f.date_debut IS NULL, f.date_debut ASC',
+            'prix'  => 'f.prix ASC',
+            'duree' => 'f.duree_heures ASC',
+        ];
+        $sql .= ' ORDER BY ' . ($ordres[$tri] ?? $ordres['date']);
+
         $stmt = self::db()->prepare($sql);
-        $stmt->execute(['motCle' => '%' . $motCle . '%', 'idCat' => $idCategorie]);
+        $stmt->execute($params);
         return $stmt->fetchAll();
     }
 

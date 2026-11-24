@@ -1,6 +1,14 @@
 <?php
 $pageTitle   = 'Mahara | Détail de la formation';
 $currentPage = 'formation-detail';
+
+$e = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+$niveaux = ['debutant' => 'Débutant', 'intermediaire' => 'Intermédiaire', 'avance' => 'Avancé'];
+$modes   = ['en_ligne' => 'En ligne', 'presentiel' => 'Présentiel', 'hybride' => 'Hybride'];
+$niveau  = $niveaux[$formation['niveau']] ?? $formation['niveau'];
+$mode    = $modes[$formation['mode']] ?? $formation['mode'];
+$prix    = (float) $formation['prix'] == 0 ? 'Gratuite'
+    : rtrim(rtrim(number_format((float) $formation['prix'], 2, '.', ''), '0'), '.') . ' TND';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -19,8 +27,8 @@ $currentPage = 'formation-detail';
     <section class="page-header">
         <div class="container">
             <ol class="breadcrumb"><li><a href="index.php?page=accueil">Accueil</a></li><li><a href="index.php?page=formations">Formations</a></li><li>Détail de la formation</li></ol>
-            <h1>PHP et MySQL pour débutants</h1>
-            <p>Développement web · débutant · 30 heures · hybride</p>
+            <h1><?= $e($formation['titre']) ?></h1>
+            <p><?= $e($formation['categorie']) ?> · <?= $e(mb_strtolower($niveau)) ?> · <?= (int) $formation['duree_heures'] ?> heures · <?= $e(mb_strtolower($mode)) ?></p>
         </div>
     </section>
     <!-- Header End -->
@@ -31,26 +39,18 @@ $currentPage = 'formation-detail';
         <div class="container">
             <div class="detail-grid">
                 <article class="card">
-                    <div class="tag-list" style="margin-bottom:18px"><span class="badge">Développement web</span><span class="badge badge-green">Débutant</span><span class="badge badge-outline">Hybride</span></div>
+                    <div class="tag-list" style="margin-bottom:18px"><span class="badge"><?= $e($formation['categorie']) ?></span><span class="badge badge-green"><?= $e($niveau) ?></span><span class="badge badge-outline"><?= $e($mode) ?></span></div>
                     <h3 style="margin-bottom:10px">Description</h3>
-                    <p class="text-muted" style="margin-bottom:20px">Construire un site dynamique pas à pas : formulaires, base de données MySQL, connexion des utilisateurs. Idéal avant tes premières missions de développement web.</p>
-                    <h3 style="margin-bottom:10px">Programme</h3>
-                    <ul class="text-muted" style="margin:0 0 20px 18px">
-                        <li>Rappels HTML et CSS, structure d'un projet PHP</li>
-                        <li>Variables, conditions, boucles et fonctions</li>
-                        <li>Formulaires et validation des données</li>
-                        <li>Base de données MySQL avec PDO : lire, ajouter, modifier, supprimer</li>
-                        <li>Mini-projet : un site vitrine avec formulaire de contact</li>
-                    </ul>
-                    <h3 style="margin-bottom:10px">Prérequis</h3>
-                    <p class="text-muted">Savoir utiliser un ordinateur et un navigateur. Aucune expérience en programmation n'est demandée.</p>
+                    <p class="text-muted"><?= $formation['description'] !== null && $formation['description'] !== ''
+                        ? nl2br($e($formation['description']))
+                        : 'Aucune description pour le moment.' ?></p>
                 </article>
                 <aside class="card">
-                    <div class="info-row"><span>Prix</span><strong>60 TND</strong></div>
-                    <div class="info-row"><span>Durée</span><strong>30 heures</strong></div>
-                    <div class="info-row"><span>Mode</span><strong>Hybride</strong></div>
-                    <div class="info-row"><span>Niveau</span><strong>Débutant</strong></div>
-                    <div class="info-row"><span>Date de début</span><strong>05/12/2026</strong></div>
+                    <div class="info-row"><span>Prix</span><strong><?= $e($prix) ?></strong></div>
+                    <div class="info-row"><span>Durée</span><strong><?= (int) $formation['duree_heures'] ?> heures</strong></div>
+                    <div class="info-row"><span>Mode</span><strong><?= $e($mode) ?></strong></div>
+                    <div class="info-row"><span>Niveau</span><strong><?= $e($niveau) ?></strong></div>
+                    <div class="info-row"><span>Date de début</span><strong><?= $formation['date_debut'] ? $e(date('d/m/Y', strtotime($formation['date_debut']))) : 'À définir' ?></strong></div>
                     <p class="form-help" style="margin-top:16px">Ajoute ensuite ton mini-projet à ton portfolio pour le montrer aux clients.</p>
                     <a href="index.php?page=formations" class="btn btn-outline btn-block" style="margin-top:16px">Retour aux formations</a>
                 </aside>

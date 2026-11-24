@@ -1,6 +1,13 @@
 <?php
 $pageTitle   = 'Mahara | Formations';
 $currentPage = 'formations';
+
+$e = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+$niveaux = ['debutant' => 'Débutant', 'intermediaire' => 'Intermédiaire', 'avance' => 'Avancé'];
+$modes   = ['en_ligne' => 'En ligne', 'presentiel' => 'Présentiel', 'hybride' => 'Hybride'];
+$prix    = fn($p) => (float) $p == 0 ? 'Gratuite'
+    : rtrim(rtrim(number_format((float) $p, 2, '.', ''), '0'), '.') . ' TND';
+$nb = count($formations);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -30,69 +37,69 @@ $currentPage = 'formations';
     <section class="section">
         <div class="container">
             <div class="listing">
-                <form class="card filters" action="index.php" method="get">
+                <form id="f-form" class="card filters" action="index.php" method="get">
                     <input type="hidden" name="page" value="formations">
                     <h3>Rechercher</h3>
                     <div class="form-group">
                         <label for="f-q">Mot-clé</label>
-                        <input id="f-q" name="q" type="search" class="form-control" placeholder="Ex. PHP, Canva">
+                        <input id="f-q" name="q" type="search" class="form-control" placeholder="Ex. PHP, Canva" value="<?= $e($filtres['q']) ?>">
                     </div>
                     <div class="form-group">
                         <label for="f-cat">Catégorie</label>
-                        <select id="f-cat" name="categorie" class="form-control"><option value="">Toutes</option><option value="1">Design</option><option value="2">Développement web</option><option value="3">Marketing digital</option><option value="4">Langues</option></select>
+                        <select id="f-cat" name="categorie" class="form-control">
+                            <option value="">Toutes</option>
+                            <?php foreach ($categories as $c): ?>
+                                <option value="<?= (int) $c['id_categorie_formation'] ?>"<?= $filtres['categorie'] === (int) $c['id_categorie_formation'] ? ' selected' : '' ?>><?= $e($c['nom']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="form-group">
                         <span style="font-weight:800;font-size:14px">Niveau</span>
-                        <label class="check"><input type="checkbox" name="niveau[]" value="debutant"> Débutant</label>
-                        <label class="check"><input type="checkbox" name="niveau[]" value="intermediaire"> Intermédiaire</label>
-                        <label class="check"><input type="checkbox" name="niveau[]" value="avance"> Avancé</label>
+                        <?php foreach ($niveaux as $valeur => $libelle): ?>
+                            <label class="check"><input type="checkbox" name="niveau[]" value="<?= $valeur ?>"<?= in_array($valeur, $filtres['niveaux'], true) ? ' checked' : '' ?>> <?= $libelle ?></label>
+                        <?php endforeach; ?>
                     </div>
                     <div class="form-group">
                         <label for="f-mode">Mode</label>
-                        <select id="f-mode" name="mode" class="form-control"><option value="">Tous</option><option value="en_ligne">En ligne</option><option value="presentiel">Présentiel</option><option value="hybride">Hybride</option></select>
+                        <select id="f-mode" name="mode" class="form-control">
+                            <option value="">Tous</option>
+                            <?php foreach ($modes as $valeur => $libelle): ?>
+                                <option value="<?= $valeur ?>"<?= $filtres['mode'] === $valeur ? ' selected' : '' ?>><?= $libelle ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="f-prix">Prix maximum (TND)</label>
-                        <input id="f-prix" name="prix_max" type="number" class="form-control" placeholder="Ex. 50" min="0">
+                        <input id="f-prix" name="prix_max" type="number" class="form-control" placeholder="Ex. 50" min="0" value="<?= $e($filtres['prix_max']) ?>">
                     </div>
                     <button type="submit" class="btn btn-dark btn-block">Rechercher</button>
                 </form>
                 <div>
-                    <div class="result-bar"><span>5 formations trouvées</span>
+                    <div class="result-bar"><span><?= $nb ?> formation<?= $nb > 1 ? 's' : '' ?> trouvée<?= $nb > 1 ? 's' : '' ?></span>
                         <label for="f-tri" style="position:absolute;left:-9999px">Trier</label>
-                        <select id="f-tri" class="form-control" style="width:auto"><option>Prochaines dates</option><option>Prix croissant</option><option>Durée</option></select>
+                        <select id="f-tri" name="tri" form="f-form" class="form-control" style="width:auto" onchange="this.form.submit()">
+                            <option value="date"<?= $tri === 'date' ? ' selected' : '' ?>>Prochaines dates</option>
+                            <option value="prix"<?= $tri === 'prix' ? ' selected' : '' ?>>Prix croissant</option>
+                            <option value="duree"<?= $tri === 'duree' ? ' selected' : '' ?>>Durée</option>
+                        </select>
                     </div>
+                    <?php if ($nb === 0): ?>
+                        <p class="text-muted">Aucune formation ne correspond à ta recherche.</p>
+                    <?php endif; ?>
                     <div class="grid grid-2">
+                    <?php foreach ($formations as $f): ?>
                     <article class="card mission-card">
-                        <div class="top"><span class="badge">Design</span><span class="price">Gratuite</span></div>
-                        <h3>Initiation à Canva et Figma</h3>
-                        <div class="meta"><span>Débutant</span><span>12 h</span><span>En ligne</span><span>Début : 01/12/2026</span></div>
-                        <a href="index.php?page=formation-detail" class="btn btn-blue btn-sm" style="align-self:flex-start">Voir la formation</a>
+                        <div class="top"><span class="badge"><?= $e($f['categorie']) ?></span><span class="price"><?= $e($prix($f['prix'])) ?></span></div>
+                        <h3><?= $e($f['titre']) ?></h3>
+                        <div class="meta">
+                            <span><?= $e($niveaux[$f['niveau']] ?? $f['niveau']) ?></span>
+                            <span><?= (int) $f['duree_heures'] ?> h</span>
+                            <span><?= $e($modes[$f['mode']] ?? $f['mode']) ?></span>
+                            <?php if ($f['date_debut']): ?><span>Début : <?= $e(date('d/m/Y', strtotime($f['date_debut']))) ?></span><?php endif; ?>
+                        </div>
+                        <a href="index.php?page=formation-detail&amp;id=<?= (int) $f['id_formation'] ?>" class="btn btn-blue btn-sm" style="align-self:flex-start">Voir la formation</a>
                     </article>
-                    <article class="card mission-card">
-                        <div class="top"><span class="badge">Développement web</span><span class="price">60 TND</span></div>
-                        <h3>PHP et MySQL pour débutants</h3>
-                        <div class="meta"><span>Débutant</span><span>30 h</span><span>Hybride</span><span>Début : 05/12/2026</span></div>
-                        <a href="index.php?page=formation-detail" class="btn btn-blue btn-sm" style="align-self:flex-start">Voir la formation</a>
-                    </article>
-                    <article class="card mission-card">
-                        <div class="top"><span class="badge">Développement web</span><span class="price">45 TND</span></div>
-                        <h3>JavaScript moderne</h3>
-                        <div class="meta"><span>Intermédiaire</span><span>24 h</span><span>En ligne</span><span>Début : 10/01/2027</span></div>
-                        <a href="index.php?page=formation-detail" class="btn btn-blue btn-sm" style="align-self:flex-start">Voir la formation</a>
-                    </article>
-                    <article class="card mission-card">
-                        <div class="top"><span class="badge">Marketing digital</span><span class="price">30 TND</span></div>
-                        <h3>Gérer la page Facebook d'un commerce</h3>
-                        <div class="meta"><span>Débutant</span><span>8 h</span><span>Présentiel</span><span>Début : 12/12/2026</span></div>
-                        <a href="index.php?page=formation-detail" class="btn btn-blue btn-sm" style="align-self:flex-start">Voir la formation</a>
-                    </article>
-                    <article class="card mission-card">
-                        <div class="top"><span class="badge">Langues</span><span class="price">40 TND</span></div>
-                        <h3>Anglais professionnel</h3>
-                        <div class="meta"><span>Intermédiaire</span><span>20 h</span><span>En ligne</span><span>Début : 15/01/2027</span></div>
-                        <a href="index.php?page=formation-detail" class="btn btn-blue btn-sm" style="align-self:flex-start">Voir la formation</a>
-                    </article>
+                    <?php endforeach; ?>
                     </div>
                 </div>
             </div>
