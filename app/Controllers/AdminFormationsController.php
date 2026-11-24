@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\CategorieFormation;
 use App\Models\Formation;
 
 class AdminFormationsController extends Controller
@@ -25,6 +26,7 @@ class AdminFormationsController extends Controller
 
         $this->render('formations', [
             'formations' => Formation::allWithCategorie(),
+            'categories' => CategorieFormation::all(),   // pour le filtre par catégorie
             'flash'      => $flash,
         ]);
     }
