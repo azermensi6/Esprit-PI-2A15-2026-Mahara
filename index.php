@@ -56,15 +56,12 @@ $routes = require __DIR__ . '/app/routes.php';
 $page   = $_GET['page'] ?? 'accueil';
 
 $route = (is_string($page) && isset($routes[$page])) ? $routes[$page] : null;
-[$controller, $method] = $route !== null ? array_pad(explode('@', $route), 2, 'index') : ['ErreurController', 'index'];
+[$controller, $method] = $route !== null ? array_pad(explode('@', $route), 2, 'index') : ['PageController', 'erreur'];
 
 $class = 'App\\Controllers\\' . $controller;
 if (!class_exists($class) || !method_exists($class, $method)) {
-    $class  = 'App\\Controllers\\ErreurController';
-    $method = 'index';
-}
-if ($class === 'App\\Controllers\\ErreurController') {
-    http_response_code(404);
+    $class  = 'App\\Controllers\\PageController';   // page introuvable : erreur() envoie le code 404
+    $method = 'erreur';
 }
 
 (new $class())->$method();
