@@ -2,24 +2,38 @@
 
 namespace App\Controllers;
 
+use Database;
+use PDO;
+
+/**
+ * Contrôleur de base : connexion à la base ($this->db) et affichage des vues.
+ * Chaque contrôleur hérite de cette classe.
+ */
 abstract class Controller
 {
+    /** Connexion PDO partagée (Singleton de config/database.php) */
+    protected PDO $db;
+
     /** Clé de la page courante, utilisée par la navbar / sidebar pour l'état actif */
     protected string $page = 'dashboard';
 
     /** Titre affiché dans <title> (back office) */
     protected string $title = 'Mahara Admin';
 
+    public function __construct()
+    {
+        $this->db = Database::getConnexion();
+    }
+
     /**
-     * Back office : rend une vue de contenu (app/Views/back/pages/{$view}.php)
-     * dans le layout commun.
-     *
-     * @param string      $view        nom du fichier de vue (sans .php) dans Views/back/pages
-     * @param array       $data        variables à extraire dans la vue de contenu
-     * @param string|null $scriptsView nom du fichier de script spécifique (sans .php) — optionnel
+     * Back office : rend une vue (app/Views/back/pages/{$view}.php) dans le layout commun.
+     * Filet de sécurité : aucune page du back office ne s'affiche sans le rôle admin.
      */
     protected function render(string $view, array $data = [], ?string $scriptsView = null): void
     {
+        AuthController::requireRole('admin');
+
+        $data['csrfToken'] = AuthController::getCsrfToken();
         $content      = $this->capture(__DIR__ . '/../Views/back/pages/' . $view . '.php', $data);
         $extraScripts = $scriptsView
             ? $this->capture(__DIR__ . '/../Views/back/pages/' . $scriptsView . '.php', $data)
@@ -31,11 +45,10 @@ abstract class Controller
         require_once __DIR__ . '/../Views/back/layout.php';
     }
 
-    /**
-     * Back office : page complète sans layout (ex : connexion admin).
-     */
+    /** Back office : page complète sans layout (ex : connexion admin) */
     protected function renderStandalone(string $view, array $data = []): void
     {
+        $data['csrfToken'] = AuthController::getCsrfToken();
         extract($data);
         $title       = $this->title;
         $currentPage = $this->page;
@@ -44,27 +57,48 @@ abstract class Controller
 
     /**
      * Front office : la page (app/Views/front/{$view}.php) assemble elle-même
-     * ses includes (head, spinner, navbar, footer, scripts) comme dans la partie 1 de l'atelier.
+     * ses includes (head, spinner, navbar, footer, scripts).
+     * Le jeton CSRF est transmis à toutes les vues : $csrfToken.
      */
     protected function renderFront(string $view, array $data = []): void
     {
+        $data['csrfToken'] = AuthController::getCsrfToken();
         extract($data);
         require_once __DIR__ . '/../Views/front/' . $view . '.php';
     }
 
-    /**
-     * Front office : réservé aux utilisateurs connectés.
-     * Sinon, redirection vers la connexion puis retour sur $page après login.
-     */
+    /** Front office : réservé aux utilisateurs connectés (raccourci vers AuthController::requireAuth) */
     protected function requireLogin(string $page): void
     {
-        if (!isLoggedIn()) {
-            header('Location: index.php?page=connexion&redirect=' . urlencode($page));
-            exit;
+        AuthController::requireAuth($page);
+    }
+
+    /** Back office : réservé aux administrateurs. À appeler AVANT tout traitement. */
+    protected function requireAdmin(): void
+    {
+        AuthController::requireRole('admin');
+    }
+
+    /**
+     * CSRF : arrête la requête si le jeton du formulaire est absent ou faux (erreur 403).
+     * À appeler au début de chaque traitement d'un formulaire envoyé en POST.
+     */
+    protected function verifierCsrf(): void
+    {
+        if (!AuthController::verifyCsrfToken($_POST['csrf_token'] ?? null)) {
+            http_response_code(403);
+            die('Jeton de sécurité invalide : rechargez la page du formulaire puis réessayez. <a href="index.php">Retour au site</a>');
         }
     }
 
-    /** Exécute une vue et renvoie son HTML sous forme de texte */
+    /** Redirige vers index.php?page=$page (avec d'éventuels paramètres) et arrête le script */
+    protected function redirect(string $page, array $params = []): never
+    {
+        header('Location: index.php?' . http_build_query(['page' => $page] + $params));
+        exit;
+    }
+
+    /** Exécute une vue et renvoie son HTML sous forme de texte (ob_start / ob_get_clean) */
     protected function capture(string $file, array $data = []): string
     {
         extract($data);

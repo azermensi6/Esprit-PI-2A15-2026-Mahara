@@ -58,6 +58,12 @@
     });
   }
 
+  // Formulaires décoratifs (recherche de l'en-tête, newsletter) : pas d'envoi
+  // (remplace l'ancien onsubmit="return false;" bloqué par la Content-Security-Policy)
+  document.querySelectorAll('form[data-no-submit]').forEach(function (form) {
+    form.addEventListener('submit', function (e) { e.preventDefault(); });
+  });
+
   // 3b. Boutons « Supprimer », « Retirer »… : demander confirmation
   document.querySelectorAll('[data-confirm]').forEach(function (btn) {
     btn.addEventListener('click', function (e) {

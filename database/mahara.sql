@@ -1,6 +1,6 @@
 -- =====================================================================
 --  MAHARA : base de données complète (MySQL / MariaDB, phpMyAdmin)
---  1 table commune (utilisateur) + 5 modules de 2 tables chacun
+--  2 tables communes (utilisateur, reclamation) + 5 modules de 2 tables chacun
 -- =====================================================================
 
 DROP DATABASE IF EXISTS mahara;
@@ -155,13 +155,36 @@ CREATE TABLE formation (
 ) ENGINE=InnoDB;
 
 -- =====================================================================
+--  TABLE COMMUNE : RÉCLAMATIONS (tous les modules)
+--  utilisateur  1 ---- N  reclamation   (« Déposer » : l'auteur)
+--  utilisateur  0,1 -- N  reclamation   (« Traiter » : un admin, facultatif)
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS reclamation (
+    id_reclamation   INT AUTO_INCREMENT PRIMARY KEY,
+    sujet            VARCHAR(150) NOT NULL,
+    description      TEXT         NOT NULL,
+    type_probleme    ENUM('compte','portfolio','mission','recrutement','paiement','formation','autre')
+                     NOT NULL DEFAULT 'autre',               -- le module concerné
+    statut           ENUM('en_attente','en_cours','resolue','rejetee') NOT NULL DEFAULT 'en_attente',
+    reponse          TEXT,                                    -- réponse de l'administrateur
+    date_reclamation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_traitement  DATETIME,                                -- rempli quand la réclamation est résolue ou rejetée
+    id_utilisateur   INT NOT NULL,                            -- jointure : l'auteur
+    id_admin         INT NULL,                                -- jointure : l'admin qui traite (NULL = non attribuée)
+    FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur) ON DELETE CASCADE,
+    FOREIGN KEY (id_admin)       REFERENCES utilisateur(id_utilisateur) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+
+-- =====================================================================
 --  DONNÉES D'EXEMPLE (inventées, pour tester)
 -- =====================================================================
 
 -- Les mots de passe ci-dessous sont un faux hachage d'exemple : ces comptes ne peuvent pas se connecter.
 -- Pour tester la connexion, créez un compte depuis votre page d'inscription (password_hash en PHP).
+-- Seul le compte admin a un vrai mot de passe : admin@mahara.tn / Admin@2026
 INSERT INTO utilisateur (nom, prenom, email, mot_de_passe, telephone, role, statut) VALUES
-('Admin',     'Mahara', 'admin@mahara.tn',            '$2y$10$Z0hxkzKXJr3m5XxR1yW4UOqvQf6t9fLQe2bQ0kq8bWm1sYk0xS1yG', '70000000', 'admin',     'actif'),       -- 1
+('Admin',     'Mahara', 'admin@mahara.tn',            '$2y$10$v4jNxKh0jFggT/v8ak.kKeGbqGig.ssz6EG2AkDcVbQDcI1bmuFC2', '70000000', 'admin',     'actif'),       -- 1
 ('Ben Ali',   'Yasmine','yasmine.benali@etu.utm.tn',  '$2y$10$Z0hxkzKXJr3m5XxR1yW4UOqvQf6t9fLQe2bQ0kq8bWm1sYk0xS1yG', '22111222', 'etudiant',  'actif'),       -- 2
 ('Trabelsi',  'Mehdi',  'mehdi.trabelsi@etu.uss.tn',  '$2y$10$Z0hxkzKXJr3m5XxR1yW4UOqvQf6t9fLQe2bQ0kq8bWm1sYk0xS1yG', '23222333', 'etudiant',  'actif'),       -- 3
 ('Kefi',      'Sarra',  'sarra.kefi@etu.ucar.tn',     '$2y$10$Z0hxkzKXJr3m5XxR1yW4UOqvQf6t9fLQe2bQ0kq8bWm1sYk0xS1yG', '24333444', 'etudiant',  'suspendu'),    -- 4
@@ -232,6 +255,13 @@ INSERT INTO formation (titre, description, niveau, duree_heures, mode, prix, dat
 ('Gérer la page Facebook d''un commerce','Calendrier éditorial et publicités',         'debutant',      8,  'presentiel', 30.00, '2026-12-12', 3),
 ('Anglais professionnel',              'Emails, entretiens et présentations',          'intermediaire', 20, 'en_ligne',   40.00, '2027-01-15', 4);
 
+-- Commun : réclamations
+INSERT INTO reclamation (sujet, description, type_probleme, statut, reponse, date_traitement, id_utilisateur, id_admin) VALUES
+('Paiement non reçu',            'La mission « Logo pour une pâtisserie » est terminée mais je ne vois pas le paiement.', 'paiement',    'resolue',    'Le paiement a bien été libéré le 20/11, vérifiez votre compte.', NOW(), 2, 1),
+('Mission sans réponse',         'Le client ne répond plus depuis une semaine sur la mission de traduction.',             'mission',     'en_cours',   NULL,                                                         NULL,  8, 1),
+('Formation introuvable',        'La formation « JavaScript moderne » n''apparaît plus dans la liste.',                  'formation',   'en_attente', NULL,                                                         NULL,  3, NULL),
+('Entreprise pas encore vérifiée','Mon entreprise est en attente de vérification depuis 10 jours.',                       'recrutement', 'en_attente', NULL,                                                         NULL,  7, NULL);
+
 -- =====================================================================
 --  REQUÊTES AVEC JOINTURES (une par personne + une commune)
 -- =====================================================================
@@ -275,3 +305,12 @@ SELECT f.titre, cf.nom AS categorie, f.niveau, f.duree_heures, f.mode, f.prix, f
 FROM formation f
 JOIN categorie_formation cf ON f.id_categorie_formation = cf.id_categorie_formation
 ORDER BY f.date_debut;
+
+-- Commun : Jointure du module : les réclamations avec leur auteur et l'admin qui les traite
+SELECT r.sujet, r.type_probleme, r.statut,
+       CONCAT(u.prenom, ' ', u.nom) AS auteur,
+       CONCAT(a.prenom, ' ', a.nom) AS traitee_par
+FROM reclamation r
+JOIN      utilisateur u ON r.id_utilisateur = u.id_utilisateur
+LEFT JOIN utilisateur a ON r.id_admin       = a.id_utilisateur
+ORDER BY r.date_reclamation DESC;

@@ -13,9 +13,9 @@ $ancre = fn(string $id): string => ($currentPage === 'accueil' ? '' : 'index.php
 
 // Membre connecté : liens de son espace selon son rôle (page => libellé)
 $liensParRole = [
-    'etudiant'  => ['missions' => 'Missions', 'offres' => "Offres d'emploi", 'formations' => 'Formations', 'portfolio' => 'Portfolio', 'mes-candidatures' => 'Mes candidatures'],
-    'client'    => ['missions' => 'Missions', 'publier-mission' => 'Publier une mission', 'mes-missions' => 'Mes missions'],
-    'recruteur' => ['offres' => "Offres d'emploi", 'publier-offre' => 'Publier une offre', 'mon-entreprise' => 'Mon entreprise'],
+    'etudiant'  => ['missions' => 'Missions', 'offres' => "Offres d'emploi", 'formations' => 'Formations', 'portfolio' => 'Portfolio', 'mes-candidatures' => 'Mes candidatures', 'mes-reclamations' => 'Réclamations'],
+    'client'    => ['missions' => 'Missions', 'publier-mission' => 'Publier une mission', 'mes-missions' => 'Mes missions', 'mes-reclamations' => 'Réclamations'],
+    'recruteur' => ['offres' => "Offres d'emploi", 'publier-offre' => 'Publier une offre', 'mon-entreprise' => 'Mon entreprise', 'mes-reclamations' => 'Réclamations'],
     'admin'     => ['missions' => 'Missions', 'offres' => "Offres d'emploi", 'formations' => 'Formations', 'dashboard' => 'Back office'],
 ];
 $liensMembre = isLoggedIn() ? ($liensParRole[currentUser()['role']] ?? []) : [];
