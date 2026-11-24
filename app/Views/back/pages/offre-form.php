@@ -1,7 +1,7 @@
 <?php
 /**
  * Vue : ajouter / modifier une offre d'emploi (back office, module P3).
- * Reçoit : $id, $offre (?OffreEmploi), $old, $errors, $types, $entreprises (Entreprise[]), $statuts, $minDate, $csrfToken
+ * Reçoit : $id, $offre (?OffreEmploi), $old, $errors, $types, $entreprises (Entreprise[]), $statuts, $minDate, $maxDate, $csrfToken
  * Validation JavaScript : assets/js/validation.js (formulaire #form-offre).
  */
 $err = fn(string $champ) => '<small class="field-error" data-erreur="' . $champ . '" style="color:#d62828">'
@@ -23,8 +23,11 @@ $titre  = $id > 0 ? 'Modifier une offre' : 'Ajouter une offre';
           </div>
 
           <div class="form-elements-wrapper">
-            <form id="form-offre" class="card-style mb-30" action="<?= e($action) ?>" method="post" data-min-date="<?= e($minDate) ?>" novalidate>
+            <form id="form-offre" class="card-style mb-30" action="<?= e($action) ?>" method="post" data-min-date="<?= e($minDate) ?>" data-max-date="<?= e($maxDate) ?>" novalidate>
               <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
+              <?php if (isset($errors['general'])): ?>
+                <div role="alert" style="padding:12px 16px;border-radius:8px;margin-bottom:20px;color:#fff;background:#d62828"><?= e($errors['general']) ?></div>
+              <?php endif; ?>
               <div class="form-grid">
                 <div class="input-style full">
                   <label for="titre">Intitulé du poste</label>
@@ -63,8 +66,8 @@ $titre  = $id > 0 ? 'Modifier une offre' : 'Ajouter une offre';
                 </div>
                 <div class="input-style">
                   <label for="date_limite">Date limite</label>
-                  <input id="date_limite" name="date_limite" type="date" min="<?= e($minDate) ?>" value="<?= e($old['date_limite']) ?>">
-                  <small>Vide = sans date limite. Après cette date, l'offre disparaît du site.</small>
+                  <input id="date_limite" name="date_limite" type="date" min="<?= e($minDate) ?>" max="<?= e($maxDate) ?>" value="<?= e($old['date_limite']) ?>">
+                  <small>Obligatoire, au plus tard le <?= e(dateFr($maxDate)) ?> (<?= App\Controllers\OffreController::DUREE_MAX_JOURS ?> jours maximum). Après cette date, l'offre disparaît du site.</small>
                   <?= $err('date_limite') ?>
                 </div>
                 <div class="input-style full">

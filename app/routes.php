@@ -70,6 +70,7 @@ return [
     'admin-entreprise-form'   => 'EntrepriseController@formulaire',
     'admin-offres'            => 'OffreController@adminListe',
     'admin-offre-form'        => 'OffreController@adminFormulaire',
+    'admin-statistiques-recrutement' => 'OffreController@statistiques',
 
     // ---------- Back office · P4 ----------
     'admin-paiements'         => 'AdminPaiementsController',

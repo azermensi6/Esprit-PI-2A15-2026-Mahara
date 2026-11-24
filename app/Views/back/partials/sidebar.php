@@ -8,7 +8,7 @@ $modules = [
     ['label' => 'Réclamations',                'href' => 'admin-reclamations',         'pages' => ['admin-reclamations', 'admin-reclamation-form'], 'count' => null],
     ['label' => 'Compétences et réalisations', 'href' => 'admin-competences',          'pages' => ['admin-competences', 'admin-competence-form', 'admin-realisations', 'admin-realisation-form'], 'count' => null],
     ['label' => 'Catégories et missions',      'href' => 'admin-missions',             'pages' => ['admin-categories', 'admin-categorie-form', 'admin-missions', 'admin-mission-form'], 'count' => 5],
-    ['label' => 'Entreprises et offres',       'href' => 'admin-entreprises',          'pages' => ['admin-entreprises', 'admin-entreprise-form', 'admin-offres', 'admin-offre-form'], 'count' => null],
+    ['label' => 'Entreprises et offres',       'href' => 'admin-entreprises',          'pages' => ['admin-entreprises', 'admin-entreprise-form', 'admin-offres', 'admin-offre-form', 'admin-statistiques-recrutement'], 'count' => null],
     ['label' => 'Paiements',                   'href' => 'admin-paiements',            'pages' => ['admin-paiements', 'admin-paiement-form'], 'count' => null],
     ['label' => 'Formations',                  'href' => 'admin-formations',           'pages' => ['admin-categories-formation', 'admin-categorie-formation-form', 'admin-formations', 'admin-formation-form'], 'count' => null],
 ];

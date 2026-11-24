@@ -85,7 +85,7 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
             </form>
 
             <?php if ($entreprise !== null): ?>
-            <div class="section-head" style="max-width:820px;margin-left:auto;margin-right:auto"><div><h2>Mes offres</h2><p><?= count($offres) ?> offre(s) publiée(s)</p></div><a href="index.php?page=publier-offre" class="btn btn-primary"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Publier une offre</a></div>
+            <div class="section-head" style="max-width:820px;margin-left:auto;margin-right:auto"><div><h2>Mes offres</h2><p><?= count($offres) ?> offre(s) publiée(s) · <strong><?= count(array_filter($offres, fn($o) => !$o->estExpiree())) ?> / <?= App\Controllers\OffreController::MAX_OFFRES_ACTIVES ?></strong> offres actives</p></div><a href="index.php?page=publier-offre" class="btn btn-primary"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg> Publier une offre</a></div>
             <div class="card table-card" style="max-width:820px;margin:0 auto">
                 <table class="data-table">
                     <thead><tr><th>Offre</th><th>Type</th><th>Date limite</th><th></th></tr></thead>

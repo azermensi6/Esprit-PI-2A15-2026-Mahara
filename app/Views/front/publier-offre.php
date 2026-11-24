@@ -1,7 +1,7 @@
 <?php
 /**
  * Vue : publier / modifier une offre d'emploi (front office, recruteur, module P3).
- * Reçoit : $id, $old, $errors, $types, $entreprise (Entreprise), $statuts, $minDate, $csrfToken
+ * Reçoit : $id, $old, $errors, $types, $entreprise (Entreprise), $statuts, $minDate, $maxDate, $csrfToken
  * Validation JavaScript : assets/js/validation.js (formulaire #form-offre).
  */
 $pageTitle   = 'Mahara | ' . ($id > 0 ? 'Modifier mon offre' : 'Publier une offre');
@@ -37,8 +37,11 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
     <!-- Form Start -->
     <section class="section">
         <div class="container">
-            <form id="form-offre" class="card form-card" action="<?= e($action) ?>" method="post" data-min-date="<?= e($minDate) ?>" novalidate>
+            <form id="form-offre" class="card form-card" action="<?= e($action) ?>" method="post" data-min-date="<?= e($minDate) ?>" data-max-date="<?= e($maxDate) ?>" novalidate>
                 <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
+                <?php if (isset($errors['general'])): ?>
+                    <p role="alert" style="margin-bottom:20px;border-radius:10px;padding:10px 14px;font-weight:600;background:#fdecec;color:#a61b1b"><?= e($errors['general']) ?></p>
+                <?php endif; ?>
                 <h3 style="margin-bottom:20px">Ton offre</h3>
                 <div class="form-grid">
                     <div class="form-group full">
@@ -68,7 +71,8 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
                     </div>
                     <div class="form-group">
                         <label for="limite">Date limite</label>
-                        <input id="limite" name="date_limite" type="date" class="form-control" min="<?= e($minDate) ?>" value="<?= e($old['date_limite']) ?>">
+                        <input id="limite" name="date_limite" type="date" class="form-control" min="<?= e($minDate) ?>" max="<?= e($maxDate) ?>" value="<?= e($old['date_limite']) ?>">
+                        <span class="form-help">Au plus tard le <?= e(dateFr($maxDate)) ?> (une offre reste publiée <?= App\Controllers\OffreController::DUREE_MAX_JOURS ?> jours maximum).</span>
                         <?= $err('date_limite') ?>
                     </div>
                     <div class="form-group full">

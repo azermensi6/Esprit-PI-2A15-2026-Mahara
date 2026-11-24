@@ -20,6 +20,12 @@ class OffreController extends Controller
     /** Salaire mensuel maximum accepté (TND) */
     public const SALAIRE_MAX = 50000;
 
+    /** Règle métier : nombre maximum d'offres actives (non expirées) par entreprise */
+    public const MAX_OFFRES_ACTIVES = 5;
+
+    /** Règle métier : une offre reste publiée au maximum 90 jours (date limite obligatoire) */
+    public const DUREE_MAX_JOURS = 90;
+
     /** Partie commune des requêtes : offre + entreprise (JOIN) + recruteur (JOIN) */
     private const SELECT = "SELECT o.*,
                 e.nom AS entreprise, e.secteur AS entreprise_secteur, e.ville AS entreprise_ville,
@@ -169,19 +175,78 @@ class OffreController extends Controller
         if ($d['salaire'] !== '' && (!is_numeric($d['salaire']) || (float) $d['salaire'] < 0 || (float) $d['salaire'] > self::SALAIRE_MAX)) {
             $errors['salaire'] = 'Le salaire doit être un nombre entre 0 et ' . self::SALAIRE_MAX . ' TND (vide si à négocier).';
         }
-        if ($d['date_limite'] !== '') {
-            $date = DateTime::createFromFormat('!Y-m-d', $d['date_limite']);
-            $min  = $datePublication !== '' ? $datePublication : date('Y-m-d');
-            if ($date === false || $date->format('Y-m-d') !== $d['date_limite']) {
-                $errors['date_limite'] = 'Date limite invalide.';
-            } elseif ($d['date_limite'] < $min) {
-                $errors['date_limite'] = $datePublication !== ''
-                    ? 'La date limite ne peut pas précéder la date de publication (' . dateFr($datePublication) . ').'
-                    : 'La date limite ne peut pas être dans le passé.';
-            }
+        // Règle métier : date limite obligatoire, entre la publication et publication + 90 jours
+        $date = DateTime::createFromFormat('!Y-m-d', $d['date_limite']);
+        $min  = $datePublication !== '' ? $datePublication : date('Y-m-d');
+        $max  = self::dateMax($datePublication);
+        if ($d['date_limite'] === '') {
+            $errors['date_limite'] = 'Choisissez une date limite.';
+        } elseif ($date === false || $date->format('Y-m-d') !== $d['date_limite']) {
+            $errors['date_limite'] = 'Date limite invalide.';
+        } elseif ($d['date_limite'] < $min) {
+            $errors['date_limite'] = $datePublication !== ''
+                ? 'La date limite ne peut pas précéder la date de publication (' . dateFr($datePublication) . ').'
+                : 'La date limite ne peut pas être dans le passé.';
+        } elseif ($d['date_limite'] > $max) {
+            $errors['date_limite'] = 'Une offre reste publiée au maximum ' . self::DUREE_MAX_JOURS
+                . ' jours : la date limite doit être au plus tard le ' . dateFr($max) . '.';
         }
         if (mb_strlen($d['description']) < 20 || mb_strlen($d['description']) > 3000) {
             $errors['description'] = 'La description doit contenir entre 20 et 3000 caractères.';
+        }
+        return $errors;
+    }
+
+    /** Date limite la plus lointaine autorisée : publication (ou aujourd'hui) + 90 jours */
+    public static function dateMax(string $datePublication = ''): string
+    {
+        $depart = $datePublication !== '' ? $datePublication : date('Y-m-d');
+        return date('Y-m-d', strtotime($depart . ' +' . self::DUREE_MAX_JOURS . ' days'));
+    }
+
+    /** Nombre d'offres actives (non expirées) d'une entreprise, sans compter l'offre $exceptId */
+    public function countActives(int $idEntreprise, int $exceptId = 0): int
+    {
+        $stmt = $this->db->prepare(
+            'SELECT COUNT(*) FROM offre_emploi
+             WHERE id_entreprise = :entreprise AND id_offre <> :id
+               AND (date_limite IS NULL OR date_limite >= CURDATE())'
+        );
+        $stmt->execute(['entreprise' => $idEntreprise, 'id' => $exceptId]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /** Vrai si l'entreprise a déjà une offre active avec le même intitulé */
+    public function titreExiste(string $titre, int $idEntreprise, int $exceptId = 0): bool
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id_offre FROM offre_emploi
+             WHERE id_entreprise = :entreprise AND id_offre <> :id AND LOWER(titre) = LOWER(:titre)
+               AND (date_limite IS NULL OR date_limite >= CURDATE())
+             LIMIT 1'
+        );
+        $stmt->execute(['entreprise' => $idEntreprise, 'id' => $exceptId, 'titre' => $titre]);
+        return $stmt->fetchColumn() !== false;
+    }
+
+    /**
+     * Règles métier liées à l'entreprise (en plus de valider()) : renvoie [champ => message]
+     *  - pas deux offres actives avec le même intitulé dans la même entreprise ;
+     *  - au maximum 5 offres actives par entreprise (l'offre enregistrée comptera si sa date limite n'est pas passée).
+     */
+    private function verifierRegles(array $d, int $idEntreprise, int $idOffre = 0): array
+    {
+        $errors = [];
+        if ($idEntreprise <= 0) {
+            return $errors;
+        }
+        if (mb_strlen($d['titre']) >= 5 && $this->titreExiste($d['titre'], $idEntreprise, $idOffre)) {
+            $errors['titre'] = 'Cette entreprise a déjà une offre active avec cet intitulé.';
+        }
+        $seraActive = $d['date_limite'] === '' || $d['date_limite'] >= date('Y-m-d');
+        if ($seraActive && $this->countActives($idEntreprise, $idOffre) >= self::MAX_OFFRES_ACTIVES) {
+            $errors['general'] = 'Une entreprise peut avoir au maximum ' . self::MAX_OFFRES_ACTIVES
+                . ' offres actives en même temps. Supprimez une offre ou attendez qu\'une offre expire.';
         }
         return $errors;
     }
@@ -285,6 +350,17 @@ class OffreController extends Controller
                 setFlash('danger', 'Offre introuvable.');
                 $this->redirect('mon-entreprise');
             }
+        } else {
+            // Règle métier : une entreprise refusée ne peut pas publier de nouvelle offre
+            if ($entreprise->getStatut() === 'refusee') {
+                setFlash('danger', 'Ton entreprise a été refusée : corrige ses informations avant de publier une nouvelle offre.');
+                $this->redirect('mon-entreprise');
+            }
+            // Règle métier : au maximum 5 offres actives par entreprise
+            if ($this->countActives($entreprise->getId()) >= self::MAX_OFFRES_ACTIVES) {
+                setFlash('danger', 'Tu as déjà ' . self::MAX_OFFRES_ACTIVES . ' offres actives : supprime une offre ou attends qu\'une offre expire.');
+                $this->redirect('mon-entreprise');
+            }
         }
         $old    = $this->champs($offre);
         $errors = [];
@@ -295,7 +371,8 @@ class OffreController extends Controller
             foreach ($old as $champ => $_) {
                 $old[$champ] = input($_POST, $champ);
             }
-            $errors = $this->valider($old, $offre?->getDatePublication() ?? '');
+            $errors = $this->valider($old, $offre?->getDatePublication() ?? '')
+                    + $this->verifierRegles($old, $entreprise->getId(), $id);
 
             if ($errors === []) {
                 $o = $this->remplir($offre ?? new OffreEmploi(), $old);
@@ -322,6 +399,7 @@ class OffreController extends Controller
             'entreprise' => $entreprise,
             'statuts'    => EntrepriseController::STATUTS,
             'minDate'    => $offre?->getDatePublication() ?? date('Y-m-d'),
+            'maxDate'    => self::dateMax($offre?->getDatePublication() ?? ''),
         ]);
     }
 
@@ -396,6 +474,8 @@ class OffreController extends Controller
             $errors = $this->valider($old, $offre?->getDatePublication() ?? '');
             if (!in_array((int) $old['id_entreprise'], $idsValides, true)) {
                 $errors['id_entreprise'] = 'Choisissez l\'entreprise qui propose l\'offre.';
+            } else {
+                $errors += $this->verifierRegles($old, (int) $old['id_entreprise'], $id);
             }
 
             if ($errors === []) {
@@ -422,6 +502,111 @@ class OffreController extends Controller
             'entreprises' => $entreprises,
             'statuts'     => EntrepriseController::STATUTS,
             'minDate'     => $offre?->getDatePublication() ?? date('Y-m-d'),
+            'maxDate'     => self::dateMax($offre?->getDatePublication() ?? ''),
+        ]);
+    }
+
+    // ==============================================================
+    // BACK OFFICE : index.php?page=admin-statistiques-recrutement (métier avancé : dashboard)
+    // Tous les calculs sont faits ici (contrôleur) ; la vue ne fait qu'afficher.
+    // ==============================================================
+
+    public function statistiques(): void
+    {
+        $this->requireAdmin();
+        $this->page  = 'admin-statistiques-recrutement';
+        $this->title = 'Statistiques recrutement | Mahara Admin';
+
+        $entreprises = new EntrepriseController();
+        $parStatut   = $entreprises->countParStatut();
+        $offres      = $this->search();                       // toutes les offres, avec leur entreprise (JOIN)
+        $aujourdhui  = date('Y-m-d');
+        $dans7jours  = date('Y-m-d', strtotime('+7 days'));
+
+        // ---------- Chiffres clés ----------
+        $actives  = array_values(array_filter($offres, fn(OffreEmploi $o) => !$o->estExpiree()));
+        $visibles = array_filter($actives, fn(OffreEmploi $o) => $o->getEntrepriseStatut() === 'verifiee');
+        $stages   = array_filter($actives, fn(OffreEmploi $o) => $o->getTypeOffre() === 'stage');
+        $salaires = array_filter(array_map(fn(OffreEmploi $o) => $o->getSalaire(), $actives), fn($s) => $s !== null);
+
+        $chiffres = [
+            'entreprises'   => array_sum($parStatut),
+            'en_attente'    => $parStatut['en_attente'],
+            'offres'        => count($offres),
+            'actives'       => count($actives),
+            'visibles'      => count($visibles),
+            'part_stages'   => count($actives) > 0 ? (int) round(count($stages) * 100 / count($actives)) : 0,
+            'salaire_moyen' => $salaires !== [] ? (int) round(array_sum($salaires) / count($salaires)) : null,
+        ];
+
+        // ---------- Offres publiées par mois (6 derniers mois), stage / emploi ----------
+        $moisFr = ['01' => 'janv.', '02' => 'févr.', '03' => 'mars', '04' => 'avr.', '05' => 'mai', '06' => 'juin',
+                   '07' => 'juil.', '08' => 'août', '09' => 'sept.', '10' => 'oct.', '11' => 'nov.', '12' => 'déc.'];
+        $parMois = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $cle = date('Y-m', strtotime(date('Y-m-01') . " -$i months"));
+            $parMois[$cle] = ['label' => $moisFr[substr($cle, 5, 2)], 'stage' => 0, 'emploi' => 0];
+        }
+        foreach ($offres as $o) {
+            $cle = substr($o->getDatePublication(), 0, 7);
+            if (isset($parMois[$cle][$o->getTypeOffre()])) {
+                $parMois[$cle][$o->getTypeOffre()]++;
+            }
+        }
+        $maxMois = max(1, ...array_values(array_map(fn($m) => $m['stage'] + $m['emploi'], $parMois)));
+        foreach ($parMois as $cle => $m) {
+            $parMois[$cle]['hauteur_stage']  = (int) round($m['stage'] * 100 / $maxMois);
+            $parMois[$cle]['hauteur_emploi'] = (int) round($m['emploi'] * 100 / $maxMois);
+        }
+
+        // ---------- Top 5 des entreprises (offres actives) et des villes ----------
+        $compter = function (array $liste, callable $cle): array {
+            $total = [];
+            foreach ($liste as $o) {
+                $nom = $cle($o);
+                if ($nom !== null && $nom !== '') {
+                    $total[$nom] = ($total[$nom] ?? 0) + 1;
+                }
+            }
+            arsort($total);
+            $total = array_slice($total, 0, 5, true);
+            $max   = max(1, ...array_values($total ?: [1]));
+            $barres = [];
+            foreach ($total as $nom => $nb) {
+                $barres[] = ['nom' => $nom, 'nb' => $nb, 'largeur' => (int) round($nb * 100 / $max)];
+            }
+            return $barres;
+        };
+        $topEntreprises = $compter($actives, fn(OffreEmploi $o) => $o->getEntreprise());
+        $topVilles      = $compter($actives, fn(OffreEmploi $o) => $o->getVille());
+
+        // ---------- Entreprises par statut (barres) ----------
+        $maxStatut = max(1, ...array_values($parStatut));
+        $barresStatut = [];
+        foreach (EntrepriseController::STATUTS as $statut => $libelle) {
+            $barresStatut[] = ['statut' => $statut, 'nom' => $libelle, 'nb' => $parStatut[$statut],
+                               'largeur' => (int) round($parStatut[$statut] * 100 / $maxStatut)];
+        }
+
+        // ---------- À traiter : entreprises en attente + offres qui expirent dans 7 jours ----------
+        $expirent = array_values(array_filter($actives, fn(OffreEmploi $o) =>
+            $o->getDateLimite() !== null && $o->getDateLimite() <= $dans7jours));
+        usort($expirent, fn($a, $b) => strcmp($a->getDateLimite(), $b->getDateLimite()));
+        $joursRestants = [];
+        foreach ($expirent as $o) {
+            $joursRestants[$o->getId()] = (int) ((strtotime($o->getDateLimite()) - strtotime($aujourdhui)) / 86400);
+        }
+
+        $this->render('statistiques-recrutement', [
+            'chiffres'       => $chiffres,
+            'parMois'        => $parMois,
+            'topEntreprises' => $topEntreprises,
+            'topVilles'      => $topVilles,
+            'barresStatut'   => $barresStatut,
+            'enAttente'      => $entreprises->search('', 'en_attente'),
+            'expirent'       => $expirent,
+            'joursRestants'  => $joursRestants,
+            'types'          => self::TYPES,
         ]);
     }
 }

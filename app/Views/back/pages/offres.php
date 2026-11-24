@@ -23,6 +23,7 @@ $actionUrl = 'index.php?' . http_build_query(['page' => 'admin-offres'] + array_
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
             <a href="index.php?page=admin-entreprises" class="main-btn light-btn btn-sm">Entreprises</a>
             <a href="index.php?page=admin-offres" class="main-btn primary-btn btn-sm">Offres d'emploi</a>
+            <a href="index.php?page=admin-statistiques-recrutement" class="main-btn light-btn btn-sm">Statistiques</a>
             <a href="index.php?page=admin-offre-form" class="main-btn orange-btn btn-sm" style="margin-left:auto">+ Ajouter une offre</a>
           </div>
 

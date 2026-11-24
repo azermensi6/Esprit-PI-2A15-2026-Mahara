@@ -142,8 +142,13 @@
     erreur('ville', ville === '' || VILLE.test(ville) ? '' : 'La ville doit contenir entre 2 et 60 lettres.');
     var salaire = val('salaire');
     erreur('salaire', salaire === '' || (!isNaN(salaire) && Number(salaire) >= 0 && Number(salaire) <= 50000) ? '' : 'Le salaire doit être un nombre entre 0 et 50000 TND (vide si à négocier).');
-    var limite = val('date_limite'), min = form.dataset.minDate || '';
-    erreur('date_limite', limite === '' || limite >= min ? '' : 'La date limite ne peut pas être avant le ' + min.split('-').reverse().join('/') + '.');
+    // Règle métier : date limite obligatoire, au maximum 90 jours après la publication
+    var limite = val('date_limite'), min = form.dataset.minDate || '', max = form.dataset.maxDate || '';
+    var fr = function (d) { return d.split('-').reverse().join('/'); };
+    erreur('date_limite', limite === '' ? 'Choisissez une date limite.'
+      : limite < min ? 'La date limite ne peut pas être avant le ' + fr(min) + '.'
+      : (max !== '' && limite > max) ? 'Une offre reste publiée au maximum 90 jours : date limite au plus tard le ' + fr(max) + '.'
+      : '');
     erreur('description', longueur(val('description'), 20, 3000) ? '' : 'La description doit contenir entre 20 et 3000 caractères.');
   });
 
