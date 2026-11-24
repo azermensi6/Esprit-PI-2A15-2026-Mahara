@@ -1,12 +1,13 @@
 <?php
+/**
+ * Vue : catalogue des formations (front office).
+ * Reçoit : $formations (Formation[]), $categories (CategorieFormation[]), $filtres, $tri, $niveaux, $modes, $csrfToken
+ */
 $pageTitle   = 'Mahara | Formations';
 $currentPage = 'formations';
 
-$e = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
-$niveaux = ['debutant' => 'Débutant', 'intermediaire' => 'Intermédiaire', 'avance' => 'Avancé'];
-$modes   = ['en_ligne' => 'En ligne', 'presentiel' => 'Présentiel', 'hybride' => 'Hybride'];
-$prix    = fn($p) => (float) $p == 0 ? 'Gratuite'
-    : rtrim(rtrim(number_format((float) $p, 2, '.', ''), '0'), '.') . ' TND';
+$prix    = fn(float $p) => $p == 0 ? 'Gratuite'
+    : rtrim(rtrim(number_format($p, 2, '.', ''), '0'), '.') . ' TND';
 $nb = count($formations);
 ?>
 <!DOCTYPE html>
@@ -42,14 +43,14 @@ $nb = count($formations);
                     <h3>Rechercher</h3>
                     <div class="form-group">
                         <label for="f-q">Mot-clé</label>
-                        <input id="f-q" name="q" type="search" class="form-control" placeholder="Ex. PHP, Canva" value="<?= $e($filtres['q']) ?>">
+                        <input id="f-q" name="q" type="search" class="form-control" placeholder="Ex. PHP, Canva" value="<?= e($filtres['q']) ?>">
                     </div>
                     <div class="form-group">
                         <label for="f-cat">Catégorie</label>
                         <select id="f-cat" name="categorie" class="form-control">
                             <option value="">Toutes</option>
                             <?php foreach ($categories as $c): ?>
-                                <option value="<?= (int) $c['id_categorie_formation'] ?>"<?= $filtres['categorie'] === (int) $c['id_categorie_formation'] ? ' selected' : '' ?>><?= $e($c['nom']) ?></option>
+                                <option value="<?= $c->getId() ?>"<?= $filtres['categorie'] === $c->getId() ? ' selected' : '' ?>><?= e($c->getNom()) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -70,14 +71,14 @@ $nb = count($formations);
                     </div>
                     <div class="form-group">
                         <label for="f-prix">Prix maximum (TND)</label>
-                        <input id="f-prix" name="prix_max" type="number" class="form-control" placeholder="Ex. 50" min="0" value="<?= $e($filtres['prix_max']) ?>">
+                        <input id="f-prix" name="prix_max" type="number" class="form-control" placeholder="Ex. 50" min="0" value="<?= e($filtres['prix_max']) ?>">
                     </div>
                     <button type="submit" class="btn btn-dark btn-block">Rechercher</button>
                 </form>
                 <div>
                     <div class="result-bar"><span><?= $nb ?> formation<?= $nb > 1 ? 's' : '' ?> trouvée<?= $nb > 1 ? 's' : '' ?></span>
                         <label for="f-tri" style="position:absolute;left:-9999px">Trier</label>
-                        <select id="f-tri" name="tri" form="f-form" class="form-control" style="width:auto" onchange="this.form.submit()">
+                        <select id="f-tri" name="tri" form="f-form" class="form-control js-autosubmit" style="width:auto">
                             <option value="date"<?= $tri === 'date' ? ' selected' : '' ?>>Prochaines dates</option>
                             <option value="prix"<?= $tri === 'prix' ? ' selected' : '' ?>>Prix croissant</option>
                             <option value="duree"<?= $tri === 'duree' ? ' selected' : '' ?>>Durée</option>
@@ -87,17 +88,17 @@ $nb = count($formations);
                         <p class="text-muted">Aucune formation ne correspond à ta recherche.</p>
                     <?php endif; ?>
                     <div class="grid grid-2">
-                    <?php foreach ($formations as $f): ?>
+                    <?php foreach ($formations as $f): /** @var App\Models\Formation $f */ ?>
                     <article class="card mission-card">
-                        <div class="top"><span class="badge"><?= $e($f['categorie']) ?></span><span class="price"><?= $e($prix($f['prix'])) ?></span></div>
-                        <h3><?= $e($f['titre']) ?></h3>
+                        <div class="top"><span class="badge"><?= e($f->getCategorie()) ?></span><span class="price"><?= e($prix($f->getPrix())) ?></span></div>
+                        <h3><?= e($f->getTitre()) ?></h3>
                         <div class="meta">
-                            <span><?= $e($niveaux[$f['niveau']] ?? $f['niveau']) ?></span>
-                            <span><?= (int) $f['duree_heures'] ?> h</span>
-                            <span><?= $e($modes[$f['mode']] ?? $f['mode']) ?></span>
-                            <?php if ($f['date_debut']): ?><span>Début : <?= $e(date('d/m/Y', strtotime($f['date_debut']))) ?></span><?php endif; ?>
+                            <span><?= e($niveaux[$f->getNiveau()] ?? $f->getNiveau()) ?></span>
+                            <span><?= $f->getDureeHeures() ?> h</span>
+                            <span><?= e($modes[$f->getMode()] ?? $f->getMode()) ?></span>
+                            <?php if ($f->getDateDebut() !== null): ?><span>Début : <?= e(dateFr($f->getDateDebut())) ?></span><?php endif; ?>
                         </div>
-                        <a href="index.php?page=formation-detail&amp;id=<?= (int) $f['id_formation'] ?>" class="btn btn-blue btn-sm" style="align-self:flex-start">Voir la formation</a>
+                        <a href="index.php?page=formation-detail&amp;id=<?= $f->getId() ?>" class="btn btn-blue btn-sm" style="align-self:flex-start">Voir la formation</a>
                     </article>
                     <?php endforeach; ?>
                     </div>

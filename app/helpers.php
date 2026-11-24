@@ -1,7 +1,7 @@
 <?php
 /**
- * Petites fonctions utilisées par la navbar (front) et la sidebar (back)
- * pour afficher automatiquement le lien de la page courante.
+ * Petites fonctions d'affichage utilisées par les vues (navbar, sidebar, formulaires).
+ * Aucune requête SQL ici : la logique métier est dans les contrôleurs.
  */
 
 /** 'active' si $page est la page courante */
@@ -28,34 +28,80 @@ function groupIsExpanded(array $pages, string $currentPage): string
     return in_array($currentPage, $pages, true) ? 'true' : 'false';
 }
 
-/* ---------- Authentification (session) ---------- */
+/* ---------- Lecture de la session (remplie par AuthController à la connexion) ---------- */
 
-/** Utilisateur connecté (id, nom, prenom, role) ou null */
+/** Utilisateur connecté ['id', 'nom', 'prenom', 'email', 'role'] ou null */
 function currentUser(): ?array
 {
-    return $_SESSION['user'] ?? null;
+    if (empty($_SESSION['user_id'])) {
+        return null;
+    }
+    return [
+        'id'     => (int) $_SESSION['user_id'],
+        'nom'    => $_SESSION['nom'] ?? '',
+        'prenom' => $_SESSION['prenom'] ?? '',
+        'email'  => $_SESSION['email'] ?? '',
+        'role'   => $_SESSION['role'] ?? '',
+    ];
 }
 
 function isLoggedIn(): bool
 {
-    return currentUser() !== null;
+    return !empty($_SESSION['user_id']);
 }
 
-/** Enregistre l'utilisateur dans la session après connexion / inscription */
-function loginUser(array $user): void
+function isAdmin(): bool
 {
-    session_regenerate_id(true);
-    $_SESSION['user'] = [
-        'id'     => (int) $user['id_utilisateur'],
-        'nom'    => $user['nom'],
-        'prenom' => $user['prenom'],
-        'role'   => $user['role'],
-    ];
+    return isLoggedIn() && ($_SESSION['role'] ?? null) === 'admin';
 }
 
-/** Page de retour après connexion : uniquement une page front connue (pas d'URL externe) */
+/** Page de retour après connexion : uniquement une page connue (pas d'URL externe) */
 function safeRedirectPage(?string $page): string
 {
     $routes = require __DIR__ . '/routes.php';
     return ($page !== null && isset($routes[$page])) ? $page : 'accueil';
+}
+
+/* ---------- Saisie et affichage ---------- */
+
+/**
+ * Lit un champ texte de $_POST ou $_GET sans risque d'erreur fatale.
+ * Renvoie '' si le champ est absent ou si ce n'est pas du texte (ex : nom[]=x envoyé comme tableau).
+ * $trim = false pour les mots de passe (les espaces en font partie).
+ */
+function input(array $source, string $key, bool $trim = true): string
+{
+    $valeur = $source[$key] ?? '';
+    if (!is_string($valeur)) {
+        return '';
+    }
+    return $trim ? trim($valeur) : $valeur;
+}
+
+/** Échappe un texte avant de l'afficher dans le HTML (protection contre les failles XSS) */
+function e(mixed $valeur): string
+{
+    return htmlspecialchars((string) $valeur, ENT_QUOTES, 'UTF-8');
+}
+
+/** Message affiché une seule fois, après une redirection */
+function setFlash(string $type, string $message): void
+{
+    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
+}
+
+function takeFlash(): ?array
+{
+    $flash = $_SESSION['flash'] ?? null;
+    unset($_SESSION['flash']);
+    return $flash;
+}
+
+/** Date MySQL (AAAA-MM-JJ ...) -> JJ/MM/AAAA, ou '—' si vide */
+function dateFr(?string $date, bool $heure = false): string
+{
+    if ($date === null || $date === '') {
+        return '—';
+    }
+    return date($heure ? 'd/m/Y H:i' : 'd/m/Y', strtotime($date));
 }

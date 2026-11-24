@@ -13,9 +13,8 @@
                     <h4>Liens rapides</h4>
                     <ul>
 <?php if (isLoggedIn()): ?>
-                        <li><a href="index.php?page=missions">Missions</a></li>
-                        <li><a href="index.php?page=offres">Offres d'emploi</a></li>
-                        <li><a href="index.php?page=publier-mission">Publier une mission</a></li>
+                        <li><a href="index.php?page=formations">Formations</a></li>
+                        <li><a href="index.php?page=mes-reclamations">Mes réclamations</a></li>
                         <li><a href="index.php?page=profil">Mon profil</a></li>
 <?php else: ?>
                         <li><a href="index.php?page=connexion">Connexion</a></li>
@@ -34,7 +33,7 @@
                 <div>
                     <h4>Newsletter</h4>
                     <p>Reçois les nouvelles missions chaque semaine.</p>
-                    <form class="newsletter" action="#" onsubmit="return false;">
+                    <form class="newsletter" action="#" data-no-submit>
                         <label for="newsletter-email" class="visually-hidden" style="position:absolute;left:-9999px">Email</label>
                         <input id="newsletter-email" type="email" class="form-control" placeholder="Ton email">
                         <button type="submit" class="btn btn-dark btn-sm">OK</button>

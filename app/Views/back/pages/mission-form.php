@@ -16,6 +16,7 @@
           <!-- ========== form-elements-wrapper start ========== -->
           <div class="form-elements-wrapper">
             <form class="card-style mb-30" action="#" method="post">
+                <input type="hidden" name="csrf_token" value="<?= e($csrfToken ?? '') ?>">
               <div class="form-grid">
                 <div class="input-style full">
                   <label for="titre">Titre</label>

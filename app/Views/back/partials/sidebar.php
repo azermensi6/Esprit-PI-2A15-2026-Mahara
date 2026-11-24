@@ -4,15 +4,11 @@ $currentPage = $currentPage ?? 'dashboard';
 
 // Un lien par module : il reste actif sur toutes les pages (listes et formulaires) du module
 $modules = [
-    ['label' => 'Utilisateurs',               'href' => 'admin-utilisateurs',         'pages' => ['admin-utilisateurs', 'admin-utilisateur-form'], 'count' => 8],
-    ['label' => 'Compétences et réalisations', 'href' => 'admin-competences',          'pages' => ['admin-competences', 'admin-competence-form', 'admin-realisations', 'admin-realisation-form'], 'count' => null],
-    ['label' => 'Catégories et missions',      'href' => 'admin-missions',             'pages' => ['admin-categories', 'admin-categorie-form', 'admin-missions', 'admin-mission-form'], 'count' => 5],
-    ['label' => 'Entreprises',                 'href' => 'admin-entreprises',          'pages' => ['admin-entreprises', 'admin-entreprise-form'], 'count' => 2],
-    ['label' => 'Paiements',                   'href' => 'admin-paiements',            'pages' => ['admin-paiements', 'admin-paiement-form'], 'count' => null],
-    ['label' => 'Formations',                  'href' => 'admin-formations',           'pages' => ['admin-categories-formation', 'admin-categorie-formation-form', 'admin-formations', 'admin-formation-form'], 'count' => null],
+    ['label' => 'Utilisateurs', 'href' => 'admin-utilisateurs', 'pages' => ['admin-utilisateurs', 'admin-utilisateur-form'], 'count' => null],
+    ['label' => 'Réclamations', 'href' => 'admin-reclamations', 'pages' => ['admin-reclamations', 'admin-reclamation-form'], 'count' => null],
+    ['label' => 'Formations',   'href' => 'admin-formations',   'pages' => ['admin-categories-formation', 'admin-categorie-formation-form', 'admin-formations', 'admin-formation-form'], 'count' => null],
 ];
 $pagesModules = array_merge(...array_column($modules, 'pages'));
-$pagesTemplate = ['blank-page', 'signin'];
 ?>
     <!-- ======== sidebar-nav start =========== -->
     <aside class="sidebar-nav-wrapper">
@@ -45,24 +41,6 @@ $pagesTemplate = ['blank-page', 'signin'];
 <?php foreach ($modules as $m): ?>
               <li><a href="index.php?page=<?= $m['href'] ?>" class="<?= in_array($currentPage, $m['pages'], true) ? 'active' : '' ?>"><span class="text"><?= $m['label'] ?></span><?php if ($m['count']): ?><span class="count"><?= $m['count'] ?></span><?php endif; ?></a></li>
 <?php endforeach; ?>
-            </ul>
-          </li>
-
-          <li class="nav-item nav-item-has-children">
-            <a
-              href="#0"
-              class="<?= isCollapsed($pagesTemplate, $currentPage) ?>"
-              data-bs-toggle="collapse"
-              data-bs-target="#ddmenu_2"
-              aria-controls="ddmenu_2"
-              aria-expanded="<?= groupIsExpanded($pagesTemplate, $currentPage) ?>"
-              aria-label="Ouvrir le menu Pages"
-            >
-              <svg class="icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg><span class="text">Pages du template</span>
-            </a>
-            <ul id="ddmenu_2" class="collapse <?= isOpen($pagesTemplate, $currentPage) ?> dropdown-nav">
-              <li><a href="index.php?page=blank-page" class="<?= isActive('blank-page', $currentPage) ?>">Page vide</a></li>
-              <li><a href="index.php?page=signin" class="<?= isActive('signin', $currentPage) ?>">Connexion admin</a></li>
             </ul>
           </li>
 

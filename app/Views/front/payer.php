@@ -31,6 +31,7 @@ $currentPage = 'payer';
         <div class="container">
             <div class="detail-grid">
                 <form class="card" action="#" method="post">
+                    <input type="hidden" name="csrf_token" value="<?= e($csrfToken ?? '') ?>">
                     <h3 style="margin-bottom:20px">Mode de paiement</h3>
                     <div class="pay-options">
                         <label class="role-option selected"><span class="top"><strong>Carte bancaire</strong><input type="radio" name="mode_paiement" value="carte" checked></span><span>Paiement immédiat, carte tunisienne ou internationale.</span></label>

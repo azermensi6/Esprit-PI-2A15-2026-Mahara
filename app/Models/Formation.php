@@ -3,146 +3,165 @@
 namespace App\Models;
 
 /**
- * Modèle (module P5) : table formation.
- * Jointure : formation.id_categorie_formation -> categorie_formation.
+ * Modèle (entité) : une formation de la table « formation » (module P5).
+ * L'attribut categorie (nom de la catégorie) vient de la jointure avec categorie_formation.
  */
-class Formation extends Model
+class Formation
 {
-    /** READ + JOIN : toutes les formations avec le nom de leur catégorie */
-    public static function allWithCategorie(): array
+    // ------------------------------------------------------------
+    // ATTRIBUTS
+    // ------------------------------------------------------------
+
+    private int $id = 0;
+    private string $titre = '';
+    private ?string $description = null;
+    private string $niveau = 'debutant';   // debutant, intermediaire ou avance
+    private int $dureeHeures = 0;
+    private string $mode = 'en_ligne';   // en_ligne, presentiel ou hybride
+    private float $prix = 0;   // en dinars (TND), 0 = gratuite
+    private ?string $dateDebut = null;
+    private string $dateCreation = '';
+    private int $idCategorieFormation = 0;   // clé étrangère
+    private string $categorie = '';   // jointure : nom de la catégorie
+
+    // ------------------------------------------------------------
+    // GETTERS
+    // ------------------------------------------------------------
+
+    public function getId(): int
     {
-        $sql = 'SELECT f.*, c.nom AS categorie
-                FROM formation f
-                JOIN categorie_formation c
-                  ON f.id_categorie_formation = c.id_categorie_formation
-                ORDER BY f.date_creation DESC';
-        return self::db()->query($sql)->fetchAll();
+        return $this->id;
     }
 
-    /**
-     * READ + JOIN (front office) : recherche multicritère. Tous les filtres sont facultatifs :
-     * q (mot-clé), categorie (id), niveaux (tableau), mode, prix_max.
-     * $tri : 'date' (prochaines dates), 'prix' ou 'duree'.
-     */
-    public static function search(array $filtres = [], string $tri = 'date'): array
+    public function getTitre(): string
     {
-        $sql = 'SELECT f.*, c.nom AS categorie
-                FROM formation f
-                JOIN categorie_formation c
-                  ON f.id_categorie_formation = c.id_categorie_formation
-                WHERE 1 = 1';
-        $params = [];
-
-        if (($filtres['q'] ?? '') !== '') {
-            $sql .= ' AND (f.titre LIKE :q1 OR f.description LIKE :q2)';
-            $params['q1'] = $params['q2'] = '%' . $filtres['q'] . '%';
-        }
-        if (($filtres['categorie'] ?? 0) > 0) {
-            $sql .= ' AND f.id_categorie_formation = :cat';
-            $params['cat'] = (int) $filtres['categorie'];
-        }
-        if (!empty($filtres['niveaux'])) {
-            $marques = [];
-            foreach (array_values($filtres['niveaux']) as $i => $niveau) {
-                $marques[] = ':niv' . $i;
-                $params['niv' . $i] = $niveau;
-            }
-            $sql .= ' AND f.niveau IN (' . implode(', ', $marques) . ')';
-        }
-        if (($filtres['mode'] ?? '') !== '') {
-            $sql .= ' AND f.mode = :mode';
-            $params['mode'] = $filtres['mode'];
-        }
-        if (($filtres['prix_max'] ?? '') !== '') {
-            $sql .= ' AND f.prix <= :prix_max';
-            $params['prix_max'] = $filtres['prix_max'];
-        }
-
-        // Le tri vient d'une liste fermée : jamais de valeur de l'utilisateur dans ORDER BY
-        $ordres = [
-            'date'  => 'f.date_debut IS NULL, f.date_debut ASC',
-            'prix'  => 'f.prix ASC',
-            'duree' => 'f.duree_heures ASC',
-        ];
-        $sql .= ' ORDER BY ' . ($ordres[$tri] ?? $ordres['date']);
-
-        $stmt = self::db()->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
+        return $this->titre;
     }
 
-    /** READ : une formation (avec sa catégorie) ; false si elle n'existe pas */
-    public static function find(int $id): array|false
+    public function getDescription(): ?string
     {
-        $stmt = self::db()->prepare(
-            'SELECT f.*, c.nom AS categorie
-             FROM formation f
-             JOIN categorie_formation c
-               ON f.id_categorie_formation = c.id_categorie_formation
-             WHERE f.id_formation = :id'
-        );
-        $stmt->execute(['id' => $id]);
-        return $stmt->fetch();
+        return $this->description;
     }
 
-    /** CREATE : $data contient les champs du formulaire ; renvoie le nouvel id */
-    public static function create(array $data): int
+    public function getNiveau(): string
     {
-        $stmt = self::db()->prepare(
-            'INSERT INTO formation
-                (titre, description, niveau, duree_heures, mode, prix, date_debut, id_categorie_formation)
-             VALUES
-                (:titre, :description, :niveau, :duree_heures, :mode, :prix, :date_debut, :id_categorie_formation)'
-        );
-        $stmt->execute(self::params($data));
-        return (int) self::db()->lastInsertId();
+        return $this->niveau;
     }
 
-    /** UPDATE */
-    public static function update(int $id, array $data): bool
+    public function getDureeHeures(): int
     {
-        $stmt = self::db()->prepare(
-            'UPDATE formation
-             SET titre = :titre, description = :description, niveau = :niveau,
-                 duree_heures = :duree_heures, mode = :mode, prix = :prix,
-                 date_debut = :date_debut, id_categorie_formation = :id_categorie_formation
-             WHERE id_formation = :id'
-        );
-        return $stmt->execute(self::params($data) + ['id' => $id]);
+        return $this->dureeHeures;
     }
 
-    /** DELETE */
-    public static function delete(int $id): bool
+    public function getMode(): string
     {
-        $stmt = self::db()->prepare('DELETE FROM formation WHERE id_formation = :id');
-        return $stmt->execute(['id' => $id]);
+        return $this->mode;
     }
 
-    /** Règle métier : ce titre existe-t-il déjà dans cette catégorie ? */
-    public static function titreExiste(string $titre, int $idCategorie, int $exceptId = 0): bool
+    public function getPrix(): float
     {
-        $stmt = self::db()->prepare(
-            'SELECT COUNT(*) FROM formation
-             WHERE titre = :titre
-               AND id_categorie_formation = :idCat
-               AND id_formation <> :id'
-        );
-        $stmt->execute(['titre' => $titre, 'idCat' => $idCategorie, 'id' => $exceptId]);
-        return (int) $stmt->fetchColumn() > 0;
+        return $this->prix;
     }
 
-    /** Prépare les paramètres communs à create() et update() */
-    private static function params(array $data): array
+    public function getDateDebut(): ?string
     {
-        return [
-            'titre'                  => $data['titre'],
-            'description'            => $data['description'] ?? null,
-            'niveau'                 => $data['niveau'],
-            'duree_heures'           => (int) $data['duree_heures'],
-            'mode'                   => $data['mode'],
-            'prix'                   => $data['prix'],
-            'date_debut'             => ($data['date_debut'] ?? '') !== '' ? $data['date_debut'] : null,
-            'id_categorie_formation' => (int) $data['id_categorie_formation'],
-        ];
+        return $this->dateDebut;
+    }
+
+    public function getDateCreation(): string
+    {
+        return $this->dateCreation;
+    }
+
+    public function getIdCategorieFormation(): int
+    {
+        return $this->idCategorieFormation;
+    }
+
+    public function getCategorie(): string
+    {
+        return $this->categorie;
+    }
+
+    // ------------------------------------------------------------
+    // SETTERS
+    // ------------------------------------------------------------
+
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function setTitre(string $titre): void
+    {
+        $this->titre = $titre;
+    }
+
+    public function setDescription(?string $description): void
+    {
+        $this->description = $description;
+    }
+
+    public function setNiveau(string $niveau): void
+    {
+        $this->niveau = $niveau;
+    }
+
+    public function setDureeHeures(int $dureeHeures): void
+    {
+        $this->dureeHeures = $dureeHeures;
+    }
+
+    public function setMode(string $mode): void
+    {
+        $this->mode = $mode;
+    }
+
+    public function setPrix(float $prix): void
+    {
+        $this->prix = $prix;
+    }
+
+    public function setDateDebut(?string $dateDebut): void
+    {
+        $this->dateDebut = $dateDebut;
+    }
+
+    public function setDateCreation(string $dateCreation): void
+    {
+        $this->dateCreation = $dateCreation;
+    }
+
+    public function setIdCategorieFormation(int $idCategorieFormation): void
+    {
+        $this->idCategorieFormation = $idCategorieFormation;
+    }
+
+    public function setCategorie(string $categorie): void
+    {
+        $this->categorie = $categorie;
+    }
+
+    // ------------------------------------------------------------
+    // CONVERSION : ligne SQL (tableau) -> objet
+    // ------------------------------------------------------------
+
+    public static function fromArray(array $row): self
+    {
+        $formation = new self();
+
+        $formation->setId((int) ($row['id_formation'] ?? 0));
+        $formation->setTitre((string) ($row['titre'] ?? ''));
+        $formation->setDescription(isset($row['description']) ? (string) $row['description'] : null);
+        $formation->setNiveau((string) ($row['niveau'] ?? 'debutant'));
+        $formation->setDureeHeures((int) ($row['duree_heures'] ?? 0));
+        $formation->setMode((string) ($row['mode'] ?? 'en_ligne'));
+        $formation->setPrix((float) ($row['prix'] ?? 0));
+        $formation->setDateDebut(isset($row['date_debut']) ? (string) $row['date_debut'] : null);
+        $formation->setDateCreation((string) ($row['date_creation'] ?? ''));
+        $formation->setIdCategorieFormation((int) ($row['id_categorie_formation'] ?? 0));
+        $formation->setCategorie((string) ($row['categorie'] ?? ''));
+
+        return $formation;
     }
 }

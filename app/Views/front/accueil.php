@@ -3,10 +3,12 @@ $pageTitle   = 'Mahara | Accueil';
 $currentPage = 'accueil';
 
 /**
- * Lien vers une page réservée aux membres : connecté -> la vraie page,
- * visiteur -> défilement vers une section de l'accueil (#ancre).
+ * Lien vers une page réservée aux membres : connecté -> la vraie page (si elle existe),
+ * sinon défilement vers une section de l'accueil (#ancre).
  */
-$lien = fn(string $page, string $ancre): string => isLoggedIn() ? 'index.php?page=' . $page : '#' . $ancre;
+$routesExistantes = require __DIR__ . '/../../routes.php';
+$lien = fn(string $page, string $ancre): string =>
+    isLoggedIn() && isset($routesExistantes[$page]) ? 'index.php?page=' . $page : '#' . $ancre;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -29,8 +31,9 @@ $lien = fn(string $page, string $ancre): string => isLoggedIn() ? 'index.php?pag
                 <h1>Ta mahara, <span class="text-blue">ton avenir.</span></h1>
                 <p class="lead">Trouve des missions près de chez toi, gagne de l'expérience avant ton diplôme et aide les commerces de ta ville à passer au numérique.</p>
                 <form class="search-box" action="index.php">
-                    <label for="hero-search" style="position:absolute;left:-9999px">Rechercher une mission</label>
-                    <input id="hero-search" type="search" name="q" placeholder="Ex. logo, site web, cours de maths…">
+                    <input type="hidden" name="page" value="formations">
+                    <label for="hero-search" style="position:absolute;left:-9999px">Rechercher une formation</label>
+                    <input id="hero-search" type="search" name="q" placeholder="Rechercher une formation : PHP, Canva…">
                     <button type="submit" class="btn btn-dark">Rechercher</button>
                 </form>
                 <div class="hero-roles">

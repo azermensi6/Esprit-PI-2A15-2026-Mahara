@@ -31,6 +31,7 @@ $currentPage = 'postuler';
         <div class="container">
             <div class="detail-grid">
                 <form class="card" action="#" method="post">
+                    <input type="hidden" name="csrf_token" value="<?= e($csrfToken ?? '') ?>">
                     <h3 style="margin-bottom:20px">Ta candidature</h3>
                     <div class="form-grid">
                         <div class="form-group full">

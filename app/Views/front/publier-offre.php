@@ -30,6 +30,7 @@ $currentPage = 'publier-offre';
     <section class="section">
         <div class="container">
             <form class="card form-card" action="#" method="post">
+                <input type="hidden" name="csrf_token" value="<?= e($csrfToken ?? '') ?>">
                 <h3 style="margin-bottom:20px">Ton offre</h3>
                 <div class="form-grid">
                     <div class="form-group full"><label for="titre">Intitulé du poste</label><input id="titre" name="titre" type="text" class="form-control" placeholder="Ex. Stage en design graphique" required></div>

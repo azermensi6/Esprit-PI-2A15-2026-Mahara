@@ -26,6 +26,7 @@
 
             <!-- ========== décision ========== -->
             <form class="card-style" action="#" method="post">
+                <input type="hidden" name="csrf_token" value="<?= e($csrfToken ?? '') ?>">
               <div class="card-head"><h3>Décision</h3></div>
               <div class="form-grid" style="grid-template-columns:1fr">
                 <div class="input-style">

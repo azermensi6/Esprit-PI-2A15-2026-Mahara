@@ -30,6 +30,7 @@ $currentPage = 'publier-mission';
     <section class="section">
         <div class="container">
             <form class="card form-card" action="#" method="post">
+                <input type="hidden" name="csrf_token" value="<?= e($csrfToken ?? '') ?>">
                 <h3 style="margin-bottom:20px">Ta mission</h3>
                 <div class="form-grid">
                     <div class="form-group full">

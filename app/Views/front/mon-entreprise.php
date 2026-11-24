@@ -30,6 +30,7 @@ $currentPage = 'mon-entreprise';
     <section class="section">
         <div class="container">
             <form class="card form-card" action="#" method="post" style="margin-bottom:28px">
+                <input type="hidden" name="csrf_token" value="<?= e($csrfToken ?? '') ?>">
                 <h3 style="margin-bottom:20px">Informations de l'entreprise</h3>
                 <div class="form-grid">
                     <div class="form-group full"><label for="nom">Nom de l'entreprise</label><input id="nom" name="nom" type="text" class="form-control" value="Agence Digitale Sfax" required></div>
