@@ -1,9 +1,14 @@
 <?php
+/**
+ * Vue : inscription (front office).
+ * Reçoit : $errors (string[]), $old (valeurs saisies), $roles, $mdpMin, $csrfToken
+ * Validation JavaScript : assets/js/validation.js (formulaire #form-inscription).
+ */
 $pageTitle   = 'Mahara | Inscription';
 $currentPage = 'inscription';
-$old = $old ?? ['role' => 'etudiant', 'nom' => '', 'prenom' => '', 'email' => '', 'telephone' => ''];
 $roleLabels = ['etudiant' => 'compte étudiant', 'client' => 'compte client', 'recruteur' => 'compte recruteur'];
-$e = fn(string $k): string => htmlspecialchars($old[$k] ?? '');
+$v   = fn(string $k): string => e($old[$k] ?? '');
+$err = fn(string $champ): string => '<small data-erreur="' . $champ . '" style="color:#a61b1b;font-weight:600"></small>';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -25,8 +30,8 @@ $e = fn(string $k): string => htmlspecialchars($old[$k] ?? '');
                 <h1 style="font-size:clamp(32px,4vw,46px)">Crée ton compte</h1>
                 <p class="text-muted" style="font-size:18px;margin-top:8px">Commence par choisir ton type de compte.</p>
             </div>
-            <form action="index.php?page=inscription" method="post">
-                <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect ?? 'accueil') ?>">
+            <form id="form-inscription" action="index.php?page=inscription" method="post" novalidate data-mdp-min="<?= (int) $mdpMin ?>">
+                <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
                 <fieldset class="role-choice" style="border:0;padding:0;margin:0 0 24px">
                     <legend style="position:absolute;left:-9999px">Type de compte</legend>
                     <label class="role-option<?= $old['role'] === 'etudiant' ? ' selected' : '' ?>" data-label="compte étudiant">
@@ -47,21 +52,25 @@ $e = fn(string $k): string => htmlspecialchars($old[$k] ?? '');
                 </fieldset>
                 <div class="card">
                     <h3 style="font-family:var(--font-body);font-size:20px;margin-bottom:18px">Tes informations · <span id="form-role-label"><?= $roleLabels[$old['role']] ?? 'compte étudiant' ?></span></h3>
-<?php if (!empty($erreur)): ?>
-                <p role="alert" style="background:#fdecec;color:#a61b1b;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-weight:600"><?= htmlspecialchars($erreur) ?></p>
+<?php if (!empty($errors)): ?>
+                <div role="alert" style="background:#fdecec;color:#a61b1b;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-weight:600">
+<?php foreach ($errors as $error): ?>
+                    <div><?= e($error) ?></div>
+<?php endforeach; ?>
+                </div>
 <?php endif; ?>
 
                     <div class="form-grid">
-                        <div class="form-group"><label for="nom">Nom</label><input id="nom" name="nom" value="<?= $e('nom') ?>" type="text" class="form-control" required></div>
-                        <div class="form-group"><label for="prenom">Prénom</label><input id="prenom" name="prenom" value="<?= $e('prenom') ?>" type="text" class="form-control" required></div>
-                        <div class="form-group"><label for="email">Email</label><input id="email" name="email" value="<?= $e('email') ?>" type="email" class="form-control" placeholder="prenom.nom@universite.tn" required></div>
-                        <div class="form-group"><label for="tel">Téléphone</label><input id="tel" name="telephone" value="<?= $e('telephone') ?>" type="tel" class="form-control"></div>
-                        <div class="form-group"><label for="mdp">Mot de passe</label><input id="mdp" name="mot_de_passe" type="password" class="form-control" required></div>
-                        <div class="form-group"><label for="mdp2">Confirmer le mot de passe</label><input id="mdp2" name="confirmation" type="password" class="form-control" required></div>
+                        <div class="form-group"><label for="nom">Nom</label><input id="nom" name="nom" value="<?= $v('nom') ?>" type="text" class="form-control" maxlength="50"><?= $err('nom') ?></div>
+                        <div class="form-group"><label for="prenom">Prénom</label><input id="prenom" name="prenom" value="<?= $v('prenom') ?>" type="text" class="form-control" maxlength="50"><?= $err('prenom') ?></div>
+                        <div class="form-group"><label for="email">Email</label><input id="email" name="email" value="<?= $v('email') ?>" type="email" class="form-control" maxlength="100" autocomplete="email" placeholder="prenom.nom@universite.tn"><?= $err('email') ?></div>
+                        <div class="form-group"><label for="tel">Téléphone</label><input id="tel" name="telephone" value="<?= $v('telephone') ?>" type="tel" class="form-control" placeholder="8 chiffres, ex. 22 111 222"><?= $err('telephone') ?></div>
+                        <div class="form-group"><label for="mdp">Mot de passe (<?= (int) $mdpMin ?> caractères minimum)</label><input id="mdp" name="mot_de_passe" type="password" class="form-control" autocomplete="new-password"><?= $err('mot_de_passe') ?></div>
+                        <div class="form-group"><label for="mdp2">Confirmer le mot de passe</label><input id="mdp2" name="confirmation" type="password" class="form-control" autocomplete="new-password"><?= $err('confirmation') ?></div>
                     </div>
                     <p class="form-help" style="margin-top:14px">Le client indique à la place le nom de son commerce ou de son activité, et le recruteur le nom de son entreprise.</p>
                     <div class="form-actions"><button type="submit" class="btn btn-primary">Créer mon compte</button></div>
-                    <p class="text-muted" style="margin-top:16px">Déjà un compte ? <a href="index.php?page=connexion&amp;redirect=<?= urlencode($redirect ?? 'accueil') ?>" style="font-weight:800">Connexion</a></p>
+                    <p class="text-muted" style="margin-top:16px">Déjà un compte ? <a href="index.php?page=connexion" style="font-weight:800">Connexion</a></p>
                 </div>
             </form>
         </div>

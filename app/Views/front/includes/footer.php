@@ -34,7 +34,7 @@
                 <div>
                     <h4>Newsletter</h4>
                     <p>Reçois les nouvelles missions chaque semaine.</p>
-                    <form class="newsletter" action="#" onsubmit="return false;">
+                    <form class="newsletter" action="#" data-no-submit>
                         <label for="newsletter-email" class="visually-hidden" style="position:absolute;left:-9999px">Email</label>
                         <input id="newsletter-email" type="email" class="form-control" placeholder="Ton email">
                         <button type="submit" class="btn btn-dark btn-sm">OK</button>

@@ -1,17 +1,21 @@
 <?php
 /**
- * Table de routage : clé de page (index.php?page=...) => Controller
+ * Table de routage : clé de page (index.php?page=...) => contrôleur à appeler.
+ *   'NomController'          -> NomController::index()
+ *   'NomController@methode'  -> NomController::methode()
  */
 return [
 
     // ---------- Front office : pages publiques ----------
     'accueil'                 => 'AccueilController',
-    'connexion'               => 'ConnexionController',
-    'inscription'             => 'InscriptionController',
-    'deconnexion'             => 'DeconnexionController',
+    'connexion'               => 'AuthController@connexion',
+    'inscription'             => 'AuthController@inscription',
+    'deconnexion'             => 'AuthController@deconnexion',
 
     // ---------- Front office : membres connectés (Commun) ----------
-    'profil'                  => 'ProfilController',
+    'profil'                  => 'UtilisateurController@profil',
+    'mes-reclamations'        => 'ReclamationController@mesReclamations',
+    'reclamation-form'        => 'ReclamationController@formulaire',
 
     // ---------- P1 · Portfolio ----------
     'portfolio'               => 'PortfolioController',
@@ -40,12 +44,14 @@ return [
 
     // ---------- Back office ----------
     'dashboard'               => 'DashboardController',
-    'signin'                  => 'SigninController',
+    'signin'                  => 'AuthController@signin',
     'blank-page'              => 'BlankPageController',
 
     // ---------- Back office · Commun ----------
-    'admin-utilisateurs'      => 'AdminUtilisateursController',
-    'admin-utilisateur-form'  => 'AdminUtilisateurFormController',
+    'admin-utilisateurs'      => 'UtilisateurController@liste',
+    'admin-utilisateur-form'  => 'UtilisateurController@formulaire',
+    'admin-reclamations'      => 'ReclamationController@liste',
+    'admin-reclamation-form'  => 'ReclamationController@traitement',
 
     // ---------- Back office · P1 ----------
     'admin-competences'       => 'AdminCompetencesController',

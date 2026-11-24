@@ -4,7 +4,8 @@ $currentPage = $currentPage ?? 'dashboard';
 
 // Un lien par module : il reste actif sur toutes les pages (listes et formulaires) du module
 $modules = [
-    ['label' => 'Utilisateurs',               'href' => 'admin-utilisateurs',         'pages' => ['admin-utilisateurs', 'admin-utilisateur-form'], 'count' => 8],
+    ['label' => 'Utilisateurs',               'href' => 'admin-utilisateurs',         'pages' => ['admin-utilisateurs', 'admin-utilisateur-form'], 'count' => null],
+    ['label' => 'Réclamations',                'href' => 'admin-reclamations',         'pages' => ['admin-reclamations', 'admin-reclamation-form'], 'count' => null],
     ['label' => 'Compétences et réalisations', 'href' => 'admin-competences',          'pages' => ['admin-competences', 'admin-competence-form', 'admin-realisations', 'admin-realisation-form'], 'count' => null],
     ['label' => 'Catégories et missions',      'href' => 'admin-missions',             'pages' => ['admin-categories', 'admin-categorie-form', 'admin-missions', 'admin-mission-form'], 'count' => 5],
     ['label' => 'Entreprises',                 'href' => 'admin-entreprises',          'pages' => ['admin-entreprises', 'admin-entreprise-form'], 'count' => 2],
