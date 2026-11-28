@@ -129,6 +129,15 @@
     if (form.elements.id_recruteur) {
       erreur('id_recruteur', val('id_recruteur') !== '' ? '' : 'Choisissez un recruteur.');
     }
+    // Logo (facultatif) : PNG, JPG ou WEBP, 2 Mo maximum — vérifié aussi en PHP
+    var logo = form.elements.logo && form.elements.logo.files ? form.elements.logo.files[0] : null;
+    if (form.elements.logo) {
+      var max = Number(form.elements.logo.dataset.tailleMax || 2097152);
+      erreur('logo', !logo ? ''
+        : !/^image\/(png|jpeg|webp)$/.test(logo.type) ? 'Le logo doit être une image PNG, JPG ou WEBP.'
+        : logo.size > max ? 'Le logo ne doit pas dépasser 2 Mo.'
+        : '');
+    }
   });
 
   /* ---------- Offre d'emploi (front office « Publier une offre » et back office) ---------- */

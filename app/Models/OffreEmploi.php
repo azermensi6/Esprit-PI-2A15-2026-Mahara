@@ -20,6 +20,7 @@ class OffreEmploi
     private ?string $description = null;
     private ?string $ville = null;
     private ?float $salaire = null;            // par mois, en TND (NULL = à négocier)
+    private bool $accessible = false;          // poste accessible aux personnes en situation de handicap
     private string $datePublication = '';
     private ?string $dateLimite = null;        // NULL = sans date limite
     private int $idEntreprise = 0;             // clé étrangère : l'entreprise qui propose l'offre
@@ -27,6 +28,7 @@ class OffreEmploi
     private ?string $entrepriseSecteur = null; // jointure
     private ?string $entrepriseVille = null;   // jointure
     private ?string $entrepriseSiteWeb = null; // jointure
+    private ?string $entrepriseLogo = null;    // jointure : fichier du logo de l'entreprise
     private string $entrepriseStatut = '';     // jointure
     private int $idRecruteur = 0;              // jointure : propriétaire de l'entreprise
     private string $recruteurEmail = '';       // jointure
@@ -65,6 +67,11 @@ class OffreEmploi
         return $this->salaire;
     }
 
+    public function isAccessible(): bool
+    {
+        return $this->accessible;
+    }
+
     public function getDatePublication(): string
     {
         return $this->datePublication;
@@ -93,6 +100,11 @@ class OffreEmploi
     public function getEntrepriseVille(): ?string
     {
         return $this->entrepriseVille;
+    }
+
+    public function getEntrepriseLogo(): ?string
+    {
+        return $this->entrepriseLogo;
     }
 
     public function getEntrepriseSiteWeb(): ?string
@@ -163,6 +175,11 @@ class OffreEmploi
         $this->salaire = $salaire;
     }
 
+    public function setAccessible(bool $accessible): void
+    {
+        $this->accessible = $accessible;
+    }
+
     public function setDatePublication(string $datePublication): void
     {
         $this->datePublication = $datePublication;
@@ -191,6 +208,11 @@ class OffreEmploi
     public function setEntrepriseVille(?string $entrepriseVille): void
     {
         $this->entrepriseVille = $entrepriseVille;
+    }
+
+    public function setEntrepriseLogo(?string $entrepriseLogo): void
+    {
+        $this->entrepriseLogo = $entrepriseLogo;
     }
 
     public function setEntrepriseSiteWeb(?string $entrepriseSiteWeb): void
@@ -227,6 +249,7 @@ class OffreEmploi
         $offre->setDescription(isset($row['description']) ? (string) $row['description'] : null);
         $offre->setVille(isset($row['ville']) ? (string) $row['ville'] : null);
         $offre->setSalaire(isset($row['salaire']) ? (float) $row['salaire'] : null);
+        $offre->setAccessible(!empty($row['accessible']));
         $offre->setDatePublication((string) ($row['date_publication'] ?? ''));
         $offre->setDateLimite(isset($row['date_limite']) ? (string) $row['date_limite'] : null);
         $offre->setIdEntreprise((int) ($row['id_entreprise'] ?? 0));
@@ -234,6 +257,7 @@ class OffreEmploi
         $offre->setEntrepriseSecteur(isset($row['entreprise_secteur']) ? (string) $row['entreprise_secteur'] : null);
         $offre->setEntrepriseVille(isset($row['entreprise_ville']) ? (string) $row['entreprise_ville'] : null);
         $offre->setEntrepriseSiteWeb(isset($row['entreprise_site_web']) ? (string) $row['entreprise_site_web'] : null);
+        $offre->setEntrepriseLogo(!empty($row['entreprise_logo']) ? (string) $row['entreprise_logo'] : null);
         $offre->setEntrepriseStatut((string) ($row['entreprise_statut'] ?? ''));
         $offre->setIdRecruteur((int) ($row['id_recruteur'] ?? 0));
         $offre->setRecruteurEmail((string) ($row['recruteur_email'] ?? ''));

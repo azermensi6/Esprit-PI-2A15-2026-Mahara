@@ -2,6 +2,7 @@
 /**
  * Vue : détail d'une offre d'emploi (front office, module P3).
  * Reçoit : $offre (OffreEmploi), $publique, $proprietaire, $types, $csrfToken
+ * Métiers avancés : impression / PDF, badge « poste accessible »
  */
 $pageTitle   = 'Mahara | ' . $offre->getTitre();
 $currentPage = 'offres';
@@ -12,6 +13,8 @@ $site        = $offre->getEntrepriseSiteWeb();
 
 <head>
 <?php require_once __DIR__ . '/includes/head.php'; ?>
+<link rel="stylesheet" href="app/Views/front/assets/css/recrutement.css">
+<script src="app/Views/front/assets/js/recrutement-theme.js"></script>
 </head>
 
 <body>
@@ -45,6 +48,11 @@ $site        = $offre->getEntrepriseSiteWeb();
                     <div class="tag-list" style="margin-bottom:18px">
                         <span class="badge <?= $offre->getTypeOffre() === 'stage' ? 'badge-orange' : '' ?>"><?= e($types[$offre->getTypeOffre()] ?? $offre->getTypeOffre()) ?></span>
                         <?php if ($offre->getVille() !== null): ?><span class="badge badge-outline"><?= e($offre->getVille()) ?></span><?php endif; ?>
+                        <?php if ($offre->isAccessible()): ?><span class="badge badge-accessible">&#9855; Poste accessible aux personnes en situation de handicap</span><?php endif; ?>
+                    </div>
+                    <!-- Métier avancé : impression / enregistrement en PDF -->
+                    <div class="outils-offre no-print">
+                        <button type="button" class="btn btn-outline btn-sm" data-imprimer>&#128424; Imprimer / PDF</button>
                     </div>
                     <h3 style="margin-bottom:10px">Description du poste</h3>
                     <p class="text-muted" style="margin-bottom:20px"><?= nl2br(e($offre->getDescription() ?? '')) ?></p>
@@ -56,7 +64,10 @@ $site        = $offre->getEntrepriseSiteWeb();
                     <div class="info-row"><span>Date limite</span><strong><?= e(dateFr($offre->getDateLimite())) ?></strong></div>
                     <div class="info-row"><span>Ville</span><strong><?= e($offre->getVille() ?? '—') ?></strong></div>
                     <h3 style="margin:22px 0 10px">L'entreprise</h3>
-                    <div class="info-row"><span>Nom</span><strong><?= e($offre->getEntreprise()) ?></strong></div>
+                    <a href="index.php?page=entreprise&amp;id=<?= $offre->getIdEntreprise() ?>" class="ligne-ent ligne-ent-lien">
+                        <?php $logoNom = $offre->getEntreprise(); $logoFichier = $offre->getEntrepriseLogo(); $logoTaille = 56; require __DIR__ . '/logo-entreprise.php'; ?>
+                        <strong><?= e($offre->getEntreprise()) ?></strong>
+                    </a>
                     <div class="info-row"><span>Secteur</span><strong><?= e($offre->getEntrepriseSecteur() ?? '—') ?></strong></div>
                     <div class="info-row"><span>Site web</span>
                         <?php if ($site !== null): ?>
@@ -68,6 +79,7 @@ $site        = $offre->getEntrepriseSiteWeb();
                     <?php else: ?>
                         <a href="mailto:<?= e($offre->getRecruteurEmail()) ?>?subject=<?= rawurlencode('Candidature : ' . $offre->getTitre()) ?>" class="btn btn-primary btn-block" style="margin-top:20px">Contacter le recruteur</a>
                     <?php endif; ?>
+                    <a href="index.php?page=entreprise&amp;id=<?= $offre->getIdEntreprise() ?>" class="btn btn-outline btn-block" style="margin-top:10px">Voir l'entreprise et ses offres</a>
                     <a href="index.php?page=offres" class="btn btn-outline btn-block" style="margin-top:10px">Retour aux offres</a>
                 </aside>
             </div>
@@ -79,6 +91,7 @@ $site        = $offre->getEntrepriseSiteWeb();
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
 <?php require_once __DIR__ . '/includes/scripts.php'; ?>
+<script src="app/Views/front/assets/js/recrutement.js"></script>
 </body>
 
 </html>

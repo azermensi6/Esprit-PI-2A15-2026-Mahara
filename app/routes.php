@@ -29,6 +29,7 @@ return [
     // ---------- P3 · Recrutement ----------
     'offres'                  => 'OffreController@liste',
     'offre-detail'            => 'OffreController@detail',
+    'entreprise'              => 'EntrepriseController@fiche',
     'mon-entreprise'          => 'EntrepriseController@monEntreprise',
     'publier-offre'           => 'OffreController@formulaire',
 

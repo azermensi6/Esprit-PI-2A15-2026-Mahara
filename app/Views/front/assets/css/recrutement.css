@@ -1,0 +1,230 @@
+/* =====================================================================
+ * Module P3 · Recrutement — styles des métiers (front office)
+ * Chargé seulement par les pages du module : ne change rien chez les autres.
+ * ===================================================================== */
+
+/* Un bouton avec l'attribut hidden reste caché, même avec la classe .btn */
+.outils-offre [hidden], .recherche-vocale [hidden] { display: none !important; }
+
+/* ---------- Recherche vocale ---------- */
+.recherche-vocale { display: flex; gap: 8px; align-items: center; }
+.recherche-vocale .form-control { flex: 1; }
+.btn-micro {
+  flex: none; width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid #dfe5ef; background: #fff; font-size: 20px; cursor: pointer;
+}
+.btn-micro:hover, .btn-micro:focus-visible { border-color: var(--orange, #f5862c); outline: none; }
+.btn-micro.ecoute { background: #fdecec; border-color: #d62828; animation: micro-pulse 1s ease-in-out infinite; }
+@keyframes micro-pulse { 50% { box-shadow: 0 0 0 6px rgba(214, 40, 40, .15); } }
+.statut-micro { display: block; margin-top: 6px; color: #5b6b85; font-weight: 600; min-height: 1em; }
+
+/* ---------- Poste accessible ---------- */
+.badge-accessible { background: #e6f1fb; color: #0c447c; }
+
+/* ---------- Impression ---------- */
+.outils-offre { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+
+/* ---------- Pagination ---------- */
+.pagination-offres { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 28px; }
+
+/* ---------- Respect du réglage « réduire les animations » ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .btn-micro.ecoute { animation: none; }
+}
+
+/* ---------- Impression / PDF : seulement le contenu de l'offre ---------- */
+@media print {
+  .navbar, .footer, .back-to-top, #spinner, .no-print, .btn, .breadcrumb { display: none !important; }
+  body { background: #fff !important; }
+  .page-header { padding: 0 0 12px !important; background: none !important; }
+  .page-header h1, .page-header p { color: #000 !important; }
+  .card { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+  .detail-grid { display: block !important; }
+  .detail-grid > * + * { margin-top: 16px; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 11px; }
+}
+
+/* =====================================================================
+ * Animations, survol et clic (pages du module P3 uniquement)
+ * ===================================================================== */
+
+/* ---------- Cartes d'offres : apparition une par une + survol ---------- */
+@keyframes apparait { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.mission-card, .detail-grid > .card, .form-card, .table-card {
+  animation: apparait .45s ease-out both;
+}
+.grid > .mission-card:nth-child(2) { animation-delay: .06s; }
+.grid > .mission-card:nth-child(3) { animation-delay: .12s; }
+.grid > .mission-card:nth-child(4) { animation-delay: .18s; }
+.grid > .mission-card:nth-child(5) { animation-delay: .24s; }
+.grid > .mission-card:nth-child(6) { animation-delay: .30s; }
+.detail-grid > .card:nth-child(2) { animation-delay: .1s; }
+
+.mission-card {
+  border: 1px solid var(--border);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.mission-card:hover, .mission-card:focus-within {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(28, 51, 95, .16);
+  border-color: var(--orange);
+}
+.mission-card h3 { transition: color .2s ease; }
+.mission-card:hover h3 { color: var(--blue); }
+
+/* ---------- Boutons : survol, clic qui « s'enfonce », onde au clic ---------- */
+.btn { position: relative; overflow: hidden; transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(28, 51, 95, .15); }
+.btn:active { transform: scale(.96); box-shadow: none; }
+.btn .onde {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  background: rgba(255, 255, 255, .45); transform: scale(0); animation: onde .55s ease-out forwards;
+}
+.btn-outline .onde { background: rgba(38, 117, 184, .25); }
+@keyframes onde { to { transform: scale(2.6); opacity: 0; } }
+
+/* ---------- Badges ---------- */
+.badge { transition: transform .2s ease; }
+.mission-card:hover .badge { transform: scale(1.05); }
+
+/* ---------- Messages (succès / erreur) : glissent depuis le haut ---------- */
+@keyframes glisse { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+.section [role="alert"] { animation: glisse .35s ease-out both; }
+
+/* ---------- Bouton « Mode sombre / Mode clair » (en-tête de la page, à droite du fil d'Ariane) ---------- */
+.ligne-entete { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ligne-entete .breadcrumb { margin-bottom: 0; }
+.ligne-entete + h1 { margin-top: 14px; }
+.btn-theme-nav { display: inline-flex; align-items: center; gap: 6px; background: var(--white); }
+.btn-theme-nav .icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 600px) { .btn-theme-nav span { display: none; } }
+
+/* ---------- Survol des boutons : la couleur s'inverse, avec une lueur ---------- */
+.btn-primary:hover { background: #1C335F; color: #F3852C; box-shadow: 0 8px 20px rgba(243, 133, 44, .35); }
+.btn-dark:hover    { background: #2675B8; color: #FFFFFF; box-shadow: 0 8px 20px rgba(38, 117, 184, .35); }
+.btn-outline:hover { background: var(--navy); color: var(--white); border-color: var(--navy); }
+.btn-danger:hover  { background: #A61B1B; color: #FFFFFF; border-color: #A61B1B; }
+.btn .fleche { display: inline-block; transition: transform .2s ease; }
+.btn:hover .fleche { transform: translateX(4px); }
+
+/* =====================================================================
+ * Mode sombre (« baisser la lumière ») : on change les couleurs du template
+ * en redéfinissant ses variables. Choix gardé dans le navigateur (localStorage).
+ * ===================================================================== */
+html[data-theme="sombre"] {
+  --white: #141C2C;          /* fonds des cartes, navbar, footer */
+  --bg: #0E1422;             /* fond des bandeaux */
+  --navy: #E6EDF8;           /* titres et texte principal */
+  --text: #E6EDF8;
+  --muted: #A8B5CB;
+  --border: #2B3854;
+  --blue: #6CB0EE;           /* liens, plus clairs pour rester lisibles */
+  --blue-light: #1C2C48;
+  --orange-light: #3A2816;
+  --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  color-scheme: dark;        /* champs, listes et barres de défilement sombres */
+}
+html[data-theme="sombre"] body { background: var(--bg); }
+html[data-theme="sombre"] .navbar,
+html[data-theme="sombre"] .footer,
+html[data-theme="sombre"] .footer-bottom { border-color: var(--border); }
+html[data-theme="sombre"] .btn-primary { color: #1C335F; }                 /* texte foncé sur l'orange */
+html[data-theme="sombre"] .btn-primary:hover { background: #F3852C; color: #0E1422; box-shadow: 0 0 0 3px rgba(243, 133, 44, .35), 0 8px 20px rgba(243, 133, 44, .3); }
+html[data-theme="sombre"] .btn-dark { background: var(--blue); color: #0E1422; }
+html[data-theme="sombre"] .btn-dark:hover { background: #F3852C; color: #0E1422; box-shadow: 0 8px 20px rgba(243, 133, 44, .3); }
+html[data-theme="sombre"] .btn-outline:hover { background: var(--blue); color: #0E1422; border-color: var(--blue); }
+html[data-theme="sombre"] .form-control { background: #0E1422; color: var(--text); border-color: var(--border); }
+html[data-theme="sombre"] .badge-accessible { background: #1C2C48; color: #9CCBF5; }
+html[data-theme="sombre"] .btn-micro { background: var(--white); border-color: var(--border); }
+html[data-theme="sombre"] .mission-card:hover { box-shadow: 0 18px 40px rgba(0, 0, 0, .5); }
+html[data-theme="sombre"] .navbar-brand img { filter: brightness(1.15); }
+
+
+/* =====================================================================
+ * Carte des offres (métier avancé) — ?vue=carte sur la page Offres
+ * ===================================================================== */
+.result-bar { gap: 12px; flex-wrap: wrap; }
+.vue-onglets { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); }
+.vue-onglets a { padding: 6px 14px; border-radius: 999px; font-weight: 800; font-size: 14px; color: var(--navy); text-decoration: none; transition: background-color .2s ease, color .2s ease; }
+.vue-onglets a:hover { background: var(--blue-light); }
+.vue-onglets a.actif { background: var(--navy); color: var(--white); }
+
+.carte-offres { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; animation: apparait .45s ease-out both; }
+.carte-zone { background: linear-gradient(160deg, #EAF4FD 0%, #D6E9FA 100%); border-radius: 14px; padding: 12px; }   /* la mer */
+.carte-svg { display: block; width: 100%; max-height: 640px; }
+.carte-gouvernorats path { fill: #8DBDE8; stroke: #FFFFFF; stroke-width: 1.2; transition: fill .2s ease; }   /* la terre : bleu du template, plus clair */
+.carte-gouvernorats path:nth-child(3n+1) { fill: #7AB1E2; }   /* un léger changement de bleu d'un gouvernorat à l'autre */
+.carte-gouvernorats path:nth-child(3n+2) { fill: #9FC8EC; }
+.carte-gouvernorats path:hover { fill: #2675B8; }
+.carte-point circle { fill: var(--orange); fill-opacity: .88; stroke: var(--white); stroke-width: 2; transition: transform .2s ease, fill-opacity .2s ease; transform-box: fill-box; transform-origin: center; }
+.carte-point .carte-nb { font: 800 10px var(--font-body); fill: #1C335F; pointer-events: none; }
+.carte-point .carte-nom { font: 800 11px var(--font-body); fill: var(--navy); paint-order: stroke; stroke: var(--white); stroke-width: 3px; opacity: 0; transition: opacity .2s ease; pointer-events: none; }
+.carte-point:hover circle, .carte-point:focus circle { transform: scale(1.25); fill-opacity: 1; }
+.carte-point:hover .carte-nom, .carte-point:focus .carte-nom { opacity: 1; }
+.carte-point:focus { outline: none; }
+.carte-point:focus-visible circle { stroke: var(--blue); stroke-width: 3; }
+
+.carte-legende h3 { margin-bottom: 6px; }
+.carte-legende h4 { margin: 18px 0 8px; font-size: 15px; }
+.carte-liste { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }
+.carte-liste a { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); color: var(--navy); text-decoration: none; font-weight: 700; transition: border-color .2s ease, transform .15s ease, background-color .2s ease; }
+.carte-liste a:hover { border-color: var(--orange); background: var(--orange-light); transform: translateX(3px); }
+.carte-liste strong { min-width: 28px; text-align: center; padding: 2px 8px; border-radius: 999px; background: var(--orange); color: #1C335F; font-size: 13px; }
+/* Couleur selon le nombre d'offres : vert = beaucoup, orange = quelques-unes, jaune = peu */
+.carte-point.niveau-fort circle   { fill: #2EAD6B; }
+.carte-point.niveau-moyen circle  { fill: #F3852C; }
+.carte-point.niveau-faible circle { fill: #F6C935; }
+.carte-liste strong.niveau-fort   { background: #2EAD6B; color: #1C335F; }
+.carte-liste strong.niveau-moyen  { background: #F3852C; color: #1C335F; }
+.carte-liste strong.niveau-faible { background: #F6C935; color: #1C335F; }
+.carte-niveaux { list-style: none; padding: 0; margin: 12px 0 4px; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; font-weight: 700; color: var(--navy); }
+.carte-niveaux li { display: inline-flex; align-items: center; gap: 7px; }
+.pastille { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 2px solid var(--white); box-shadow: 0 0 0 1px var(--border); }
+.pastille.niveau-fort { background: #2EAD6B; }
+.pastille.niveau-moyen { background: #F3852C; }
+.pastille.niveau-faible { background: #F6C935; }
+.carte-source { margin-top: 16px; font-size: 12px; color: var(--muted); }
+
+@media (max-width: 900px) { .carte-offres { grid-template-columns: 1fr; } }
+html[data-theme="sombre"] .carte-zone { background: #101A2C; }
+html[data-theme="sombre"] .carte-gouvernorats path { fill: #24406A; stroke: #0E1422; }
+html[data-theme="sombre"] .carte-gouvernorats path:nth-child(3n+1) { fill: #1F3860; }
+html[data-theme="sombre"] .carte-gouvernorats path:nth-child(3n+2) { fill: #2B4A78; }
+html[data-theme="sombre"] .carte-gouvernorats path:hover { fill: #3A6AA8; }
+html[data-theme="sombre"] .carte-point circle { stroke: #0E1422; }
+html[data-theme="sombre"] .carte-point .carte-nom { stroke: #0E1422; }
+html[data-theme="sombre"] .vue-onglets a.actif { background: var(--blue); color: #0E1422; }
+
+/* ---------- Pas d'animation si l'utilisateur l'a demandé (accessibilité) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .mission-card, .detail-grid > .card, .form-card, .table-card, .section [role="alert"], .carte-offres { animation: none; }
+  .mission-card, .btn, .badge, .btn .fleche, .carte-point circle, .carte-liste a { transition: none; }
+  .mission-card:hover, .btn:hover, .btn:active, .btn:hover .fleche { transform: none; }
+  .btn .onde { display: none; }
+}
+@media print { .btn-theme-nav { display: none !important; } }
+
+/* ---------- Lien vers la fiche entreprise (cartes des offres) ---------- */
+.mission-card .lien-entreprise { color: inherit; font-weight: 700; text-decoration: underline; text-decoration-color: var(--orange); text-underline-offset: 3px; }
+.mission-card .lien-entreprise:hover { color: var(--blue); }
+
+/* ---------- Logo de l'entreprise (rond : image envoyée, ou initiales) ---------- */
+.logo-ent { box-shadow: 0 0 0 2px var(--white), 0 2px 8px rgba(28, 51, 95, .15); }
+.ligne-ent { display: flex; align-items: center; gap: 10px; margin: 4px 0 2px; font-weight: 700; color: var(--navy); }
+.ligne-ent-lien { text-decoration: none; padding: 6px 0 12px; border-bottom: 1px solid var(--border); }
+.ligne-ent-lien:hover strong { color: var(--blue); text-decoration: underline; }
+
+/* Bandeau de la fiche entreprise : dégradé bleu du template, logo à côté du nom */
+.bandeau-entreprise { background: linear-gradient(120deg, #1C335F 0%, #2675B8 65%, #4F93CF 100%); }
+.bandeau-entreprise h1, .bandeau-entreprise p { color: #FFFFFF !important; }
+.bandeau-entreprise .breadcrumb a, .bandeau-entreprise .breadcrumb li { color: #DCE8F6 !important; }
+.entete-entreprise { display: flex; align-items: center; gap: 22px; margin-top: 14px; }
+.entete-entreprise .logo-ent { box-shadow: 0 0 0 4px #FFFFFF, 0 10px 24px rgba(0, 0, 0, .25); }
+@media (max-width: 600px) { .entete-entreprise { flex-direction: column; align-items: flex-start; } }
+html[data-theme="sombre"] .bandeau-entreprise { background: linear-gradient(120deg, #0E1422 0%, #1C2C48 70%, #24406A 100%); }
+
+/* Champ « logo » du formulaire Mon entreprise */
+.zone-logo { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.zone-logo-champs { flex: 1; min-width: 220px; display: grid; gap: 6px; }
+.apercu-logo { display: grid; place-items: center; }
+.case-logo { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; }

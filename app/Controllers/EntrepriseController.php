@@ -15,6 +15,33 @@ class EntrepriseController extends Controller
     /** Valeurs autorisées par la base (ENUM) => libellé affiché */
     public const STATUTS = ['en_attente' => 'En attente', 'verifiee' => 'Vérifiée', 'refusee' => 'Refusée'];
 
+    /** Métier simple : tri de la liste des entreprises (back office) */
+    public const TRIS = [
+        'statut' => 'À vérifier d\'abord',
+        'nom'    => 'Nom (A → Z)',
+        'offres' => 'Plus d\'offres',
+        'recent' => 'Dernières ajoutées',
+    ];
+    /** Clauses ORDER BY autorisées (liste blanche : la valeur de l'URL n'est jamais mise dans le SQL) */
+    private const ORDRES = [
+        'statut' => "FIELD(e.statut, 'en_attente', 'verifiee', 'refusee'), e.nom",
+        'nom'    => 'e.nom ASC',
+        'offres' => 'nb_offres DESC, e.nom ASC',
+        'recent' => 'e.id_entreprise DESC',
+    ];
+    /** Métier simple : pagination, 10 entreprises par page */
+    public const PAR_PAGE = 10;
+
+    /** Métier avancé : logo de l'entreprise (envoi d'une image) */
+    public const LOGO_TAILLE_MAX = 2 * 1024 * 1024;                       // 2 Mo
+    private const LOGO_TYPES = ['image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp'];
+    /** Protection du dossier des logos : seules les images sont servies, aucun script ne peut s'exécuter */
+    private const LOGO_HTACCESS = "Options -Indexes\n"
+        . "<IfModule mod_php.c>\n    php_flag engine off\n</IfModule>\n"
+        . "<IfModule php_module>\n    php_flag engine off\n</IfModule>\n"
+        . "Require all denied\n"
+        . "<FilesMatch \"^[a-f0-9]{24}\\.(png|jpg|webp)$\">\n    Require all granted\n</FilesMatch>\n";
+
     /** Partie commune des requêtes : entreprise + recruteur (JOIN) + nombre d'offres (sous-requête COUNT) */
     private const SELECT = "SELECT e.*,
                 CONCAT(u.prenom, ' ', u.nom) AS recruteur, u.email AS recruteur_email,
@@ -26,8 +53,8 @@ class EntrepriseController extends Controller
     // ACCÈS AUX DONNÉES (requêtes préparées)
     // ==============================================================
 
-    /** @return Entreprise[] toutes les entreprises, filtrées (mot-clé, statut) */
-    public function search(string $q = '', string $statut = ''): array
+    /** @return Entreprise[] toutes les entreprises, filtrées (mot-clé, statut) et triées */
+    public function search(string $q = '', string $statut = '', string $tri = 'statut'): array
     {
         $sql    = self::SELECT . ' WHERE 1 = 1';
         $params = [];
@@ -40,8 +67,8 @@ class EntrepriseController extends Controller
             $sql .= ' AND e.statut = :statut';
             $params['statut'] = $statut;
         }
-        // Les entreprises à vérifier d'abord, puis par nom
-        $sql .= " ORDER BY FIELD(e.statut, 'en_attente', 'verifiee', 'refusee'), e.nom";
+        // Métier simple : tri (par défaut, les entreprises à vérifier d'abord, puis par nom)
+        $sql .= ' ORDER BY ' . (self::ORDRES[$tri] ?? self::ORDRES['statut']);
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
@@ -75,14 +102,15 @@ class EntrepriseController extends Controller
     public function insert(Entreprise $e): bool
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO entreprise (nom, secteur, ville, site_web, statut, id_recruteur)
-             VALUES (:nom, :secteur, :ville, :site, :statut, :recruteur)'
+            'INSERT INTO entreprise (nom, secteur, ville, site_web, logo, statut, id_recruteur)
+             VALUES (:nom, :secteur, :ville, :site, :logo, :statut, :recruteur)'
         );
         return $stmt->execute([
             'nom'       => $e->getNom(),
             'secteur'   => $e->getSecteur(),
             'ville'     => $e->getVille(),
             'site'      => $e->getSiteWeb(),
+            'logo'      => $e->getLogo(),
             'statut'    => $e->getStatut(),
             'recruteur' => $e->getIdRecruteur(),
         ]);
@@ -93,7 +121,7 @@ class EntrepriseController extends Controller
     {
         $stmt = $this->db->prepare(
             'UPDATE entreprise
-             SET nom = :nom, secteur = :secteur, ville = :ville, site_web = :site, statut = :statut, id_recruteur = :recruteur
+             SET nom = :nom, secteur = :secteur, ville = :ville, site_web = :site, logo = :logo, statut = :statut, id_recruteur = :recruteur
              WHERE id_entreprise = :id'
         );
         return $stmt->execute([
@@ -101,6 +129,7 @@ class EntrepriseController extends Controller
             'secteur'   => $e->getSecteur(),
             'ville'     => $e->getVille(),
             'site'      => $e->getSiteWeb(),
+            'logo'      => $e->getLogo(),
             'statut'    => $e->getStatut(),
             'recruteur' => $e->getIdRecruteur(),
             'id'        => $e->getId(),
@@ -114,9 +143,10 @@ class EntrepriseController extends Controller
         return $stmt->execute(['statut' => $statut, 'id' => $id]);
     }
 
-    /** DELETE : les offres de l'entreprise sont supprimées aussi (ON DELETE CASCADE) */
+    /** DELETE : les offres de l'entreprise sont supprimées aussi (ON DELETE CASCADE), et le fichier de son logo */
     public function delete(int $id): bool
     {
+        self::supprimerFichierLogo($this->findById($id)?->getLogo());
         $stmt = $this->db->prepare('DELETE FROM entreprise WHERE id_entreprise = :id');
         return $stmt->execute(['id' => $id]);
     }
@@ -212,6 +242,89 @@ class EntrepriseController extends Controller
     }
 
     // ==============================================================
+    // MÉTIER AVANCÉ : LOGO DE L'ENTREPRISE (envoi d'une image)
+    // ==============================================================
+
+    /**
+     * Vérifie l'image envoyée dans le champ « logo » puis l'enregistre dans uploads/logos.
+     * Renvoie [nom du fichier enregistré ou null, message d'erreur ou null].
+     * [null, null] = aucun fichier choisi (le logo actuel ne change pas).
+     */
+    private function recevoirLogo(): array
+    {
+        $fichier = $_FILES['logo'] ?? null;
+        if (!is_array($fichier) || ($fichier['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            return [null, null];
+        }
+        if (in_array($fichier['error'], [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)
+            || (int) $fichier['size'] > self::LOGO_TAILLE_MAX) {
+            return [null, 'Le logo ne doit pas dépasser 2 Mo.'];
+        }
+        if ($fichier['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($fichier['tmp_name'])) {
+            return [null, 'Le logo n\'a pas pu être envoyé, réessaie.'];
+        }
+
+        // Le vrai type est lu DANS le fichier (jamais dans son nom, qu'un attaquant peut inventer)
+        $type  = (new \finfo(FILEINFO_MIME_TYPE))->file($fichier['tmp_name']);
+        $image = @getimagesize($fichier['tmp_name']);
+        if (!isset(self::LOGO_TYPES[$type]) || $image === false) {
+            return [null, 'Le logo doit être une image PNG, JPG ou WEBP.'];
+        }
+        if ($image[0] < 32 || $image[1] < 32) {
+            return [null, 'Le logo est trop petit : au moins 32 × 32 pixels.'];
+        }
+
+        // Nom de fichier aléatoire : impossible à deviner, et le nom choisi par l'utilisateur n'est jamais utilisé
+        $nom = bin2hex(random_bytes(12)) . '.' . self::LOGO_TYPES[$type];
+        if (!move_uploaded_file($fichier['tmp_name'], self::dossierLogos() . '/' . $nom)) {
+            return [null, 'Le logo n\'a pas pu être enregistré, réessaie.'];
+        }
+        return [$nom, null];
+    }
+
+    /** Applique le choix du formulaire : nouveau logo, suppression du logo, ou rien. Renvoie un message d'erreur ou null. */
+    private function appliquerLogo(Entreprise $e): ?string
+    {
+        [$nouveau, $erreur] = $this->recevoirLogo();
+        if ($erreur !== null) {
+            return $erreur;
+        }
+        if ($nouveau !== null) {
+            self::supprimerFichierLogo($e->getLogo());         // l'ancien fichier ne sert plus
+            $e->setLogo($nouveau);
+        } elseif (input($_POST, 'supprimer_logo') === '1') {
+            self::supprimerFichierLogo($e->getLogo());
+            $e->setLogo(null);                                  // retour au logo avec les initiales
+        }
+        return null;
+    }
+
+    /** Chemin du dossier des logos (créé et protégé par un .htaccess s'il n'existe pas encore) */
+    private static function dossierLogos(): string
+    {
+        $dossier = dirname(__DIR__, 2) . '/' . Entreprise::DOSSIER_LOGOS;
+        if (!is_dir($dossier)) {
+            mkdir($dossier, 0755, true);
+        }
+        if (!is_file($dossier . '/.htaccess')) {
+            file_put_contents($dossier . '/.htaccess', self::LOGO_HTACCESS);
+        }
+        return $dossier;
+    }
+
+    /** Supprime le fichier d'un logo (seulement un nom créé par recevoirLogo : pas de chemin « ../ » possible) */
+    private static function supprimerFichierLogo(?string $nom): void
+    {
+        if ($nom === null || !preg_match('/^[a-f0-9]{24}\.(png|jpg|webp)$/', $nom)) {
+            return;
+        }
+        $chemin = dirname(__DIR__, 2) . '/' . Entreprise::DOSSIER_LOGOS . '/' . $nom;
+        if (is_file($chemin)) {
+            unlink($chemin);
+        }
+    }
+
+    // ==============================================================
     // FRONT OFFICE : index.php?page=mon-entreprise (recruteur)
     // Règle du MCD « Gérer » : un recruteur gère son entreprise
     // ==============================================================
@@ -267,9 +380,14 @@ class EntrepriseController extends Controller
             }
             $errors = $this->valider($old, $entreprise?->getId() ?? 0);
 
+            // Le logo n'est enregistré que si le reste du formulaire est correct
+            $e = $this->remplir($entreprise !== null ? clone $entreprise : new Entreprise(), $old);
+            if ($errors === [] && ($erreurLogo = $this->appliquerLogo($e)) !== null) {
+                $errors['logo'] = $erreurLogo;
+            }
+
             if ($errors === []) {
                 if ($entreprise === null) {
-                    $e = $this->remplir(new Entreprise(), $old);
                     $e->setStatut('en_attente');          // toute nouvelle entreprise est vérifiée par l'admin
                     $e->setIdRecruteur($idUser);           // le recruteur vient de la session, jamais du formulaire
                     $this->insert($e);
@@ -282,7 +400,6 @@ class EntrepriseController extends Controller
                     if ($statut === 'refusee' || ($statut === 'verifiee' && $nomChange)) {
                         $statut = 'en_attente';
                     }
-                    $e = $this->remplir($entreprise, $old);
                     $e->setStatut($statut);
                     $this->update($e);
                     setFlash('success', $statut !== $ancienStatut
@@ -314,7 +431,11 @@ class EntrepriseController extends Controller
         $this->page  = 'admin-entreprises';
         $this->title = 'Entreprises | Mahara Admin';
 
-        $filtres = ['q' => input($_GET, 'q'), 'statut' => input($_GET, 'statut')];
+        $filtres = [
+            'q'      => input($_GET, 'q'),
+            'statut' => input($_GET, 'statut'),
+            'tri'    => isset(self::TRIS[input($_GET, 'tri')]) ? input($_GET, 'tri') : 'statut',
+        ];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -331,15 +452,49 @@ class EntrepriseController extends Controller
                 $this->updateStatut($id, $action === 'verifier' ? 'verifiee' : 'refusee');
                 setFlash('success', $action === 'verifier' ? 'Entreprise vérifiée : ses offres sont visibles.' : 'Entreprise refusée.');
             }
-            $this->redirect('admin-entreprises', array_filter($filtres));
+            $this->redirect('admin-entreprises', array_filter($filtres + ['p' => input($_GET, 'p')]));
         }
 
         $this->render('entreprises', [
-            'entreprises' => $this->search($filtres['q'], $filtres['statut']),
+            'pagination'  => OffreController::paginer(
+                                 $this->search($filtres['q'], $filtres['statut'], $filtres['tri']),
+                                 (int) input($_GET, 'p'), self::PAR_PAGE),
             'stats'       => $this->countParStatut(),
             'filtres'     => $filtres,
             'statuts'     => self::STATUTS,
+            'tris'        => self::TRIS,
             'flash'       => takeFlash(),
+        ]);
+    }
+
+    // ==============================================================
+    // FRONT OFFICE : index.php?page=entreprise&id=3 — fiche publique d'une entreprise
+    // Relation du MCD « Proposer » : une entreprise (1) propose plusieurs offres (N)
+    // ==============================================================
+
+    public function fiche(): void
+    {
+        $this->requireLogin('offres');
+
+        $entreprise = $this->findById((int) input($_GET, 'id'));
+
+        // Une entreprise non vérifiée n'est visible que par son recruteur et par l'admin
+        $verifiee     = $entreprise !== null && $entreprise->getStatut() === 'verifiee';
+        $proprietaire = $entreprise !== null && $entreprise->getIdRecruteur() === (int) $_SESSION['user_id'];
+        if ($entreprise === null || (!$verifiee && !$proprietaire && !isAdmin())) {
+            setFlash('danger', 'Cette entreprise n\'existe pas ou n\'est pas encore vérifiée.');
+            $this->redirect('offres');
+        }
+
+        // Ses offres visibles sur le site (non expirées), les plus récentes d'abord
+        $offres = (new OffreController())->search('', '', '', $entreprise->getId(), true);
+
+        $this->renderFront('entreprise', [
+            'entreprise'   => $entreprise,
+            'offres'       => $offres,
+            'verifiee'     => $verifiee,
+            'proprietaire' => $proprietaire,
+            'types'        => OffreController::TYPES,
         ]);
     }
 
@@ -388,8 +543,12 @@ class EntrepriseController extends Controller
                 $errors['id_recruteur'] = 'Choisissez un recruteur qui n\'a pas encore d\'entreprise.';
             }
 
+            $e = $this->remplir($entreprise !== null ? clone $entreprise : new Entreprise(), $old);
+            if ($errors === [] && ($erreurLogo = $this->appliquerLogo($e)) !== null) {
+                $errors['logo'] = $erreurLogo;
+            }
+
             if ($errors === []) {
-                $e = $this->remplir($entreprise ?? new Entreprise(), $old);
                 $e->setStatut($old['statut']);
                 $e->setIdRecruteur((int) $old['id_recruteur']);
 

@@ -23,7 +23,7 @@ $titre  = $id > 0 ? 'Modifier une entreprise' : 'Ajouter une entreprise';
           </div>
 
           <div class="form-elements-wrapper">
-            <form id="form-entreprise" class="card-style mb-30" action="<?= e($action) ?>" method="post" novalidate>
+            <form id="form-entreprise" class="card-style mb-30" action="<?= e($action) ?>" method="post" enctype="multipart/form-data" novalidate>
               <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
               <div class="form-grid">
                 <div class="input-style full">
@@ -40,6 +40,20 @@ $titre  = $id > 0 ? 'Modifier une entreprise' : 'Ajouter une entreprise';
                   <label for="ville">Ville</label>
                   <input id="ville" name="ville" type="text" maxlength="60" placeholder="Ex. Sfax" value="<?= e($old['ville']) ?>">
                   <?= $err('ville') ?>
+                </div>
+                <div class="input-style full">
+                  <label for="logo">Logo (facultatif)</label>
+                  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                    <?php $logoNom = $old['nom'] !== '' ? $old['nom'] : 'Entreprise'; $logoFichier = $entreprise?->getLogo(); $logoTaille = 56; require __DIR__ . '/../../front/logo-entreprise.php'; ?>
+                    <div style="flex:1;min-width:220px">
+                      <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" data-taille-max="<?= App\Controllers\EntrepriseController::LOGO_TAILLE_MAX ?>">
+                      <small class="text-muted" style="display:block;margin-top:4px">PNG, JPG ou WEBP · 2 Mo maximum.</small>
+                      <?php if ($entreprise?->getLogo() !== null): ?>
+                        <label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-weight:600"><input type="checkbox" name="supprimer_logo" value="1"> Supprimer le logo actuel</label>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                  <?= $err('logo') ?>
                 </div>
                 <div class="input-style full">
                   <label for="site_web">Site web</label>

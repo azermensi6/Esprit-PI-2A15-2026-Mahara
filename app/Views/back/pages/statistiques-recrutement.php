@@ -3,10 +3,12 @@
  * Vue : dashboard statistiques du module P3 · Recrutement (back office).
  * Reçoit (déjà calculé par OffreController::statistiques()) :
  *   $chiffres, $parMois, $topEntreprises, $topVilles, $barresStatut, $enAttente (Entreprise[]),
- *   $expirent (OffreEmploi[]), $joursRestants, $types, $csrfToken
+ *   $expirent (OffreEmploi[]), $joursRestants, $types, $periode, $periodes, $niveaux, $csrfToken
  * Graphiques en HTML/CSS uniquement : aucun script externe (respect de la Content-Security-Policy).
  */
 $couleursStatut = ['en_attente' => 'var(--orange)', 'verifiee' => '#2e9e5b', 'refusee' => '#d62828'];
+$couleursNiveau = ['fort' => '#2EAD6B', 'moyen' => '#F3852C', 'faible' => '#F6C935'];   // mêmes couleurs que la carte des offres
+$pa = $chiffres['part_accessibles'];
 ?>
       <!-- ========== section start ========== -->
       <section class="section">
@@ -28,10 +30,19 @@ $couleursStatut = ['en_attente' => 'var(--orange)', 'verifiee' => '#2e9e5b', 're
             <a href="index.php?page=admin-statistiques-recrutement" class="main-btn primary-btn btn-sm">Statistiques</a>
           </div>
 
+          <!-- ---------- Filtre par période (métier) ---------- -->
+          <div class="card-style mb-30" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 22px">
+            <strong style="margin-right:4px">Période :</strong>
+            <?php foreach ($periodes as $cle => $libelle): ?>
+              <a href="index.php?page=admin-statistiques-recrutement&amp;periode=<?= e($cle) ?>" class="main-btn <?= $cle === $periode ? 'primary-btn' : 'light-btn' ?> btn-sm"<?= $cle === $periode ? ' aria-current="true"' : '' ?>><?= e($libelle) ?></a>
+            <?php endforeach; ?>
+            <small class="text-muted" style="margin-left:auto;font-weight:600">S'applique aux offres, selon leur date de publication.</small>
+          </div>
+
           <!-- ---------- Chiffres clés ---------- -->
           <div class="row-grid cols-4 mb-30">
             <div class="card-style icon-card"><div class="label">Entreprises</div><div class="value"><?= $chiffres['entreprises'] ?></div><div class="trend <?= $chiffres['en_attente'] > 0 ? '' : 'neutral' ?>"><?= $chiffres['en_attente'] ?> en attente de vérification</div></div>
-            <div class="card-style icon-card"><div class="label">Offres actives</div><div class="value blue"><?= $chiffres['actives'] ?></div><div class="trend neutral"><?= $chiffres['visibles'] ?> visibles sur le site · <?= $chiffres['offres'] ?> au total</div></div>
+            <div class="card-style icon-card"><div class="label">Offres actives</div><div class="value blue"><?= $chiffres['actives'] ?></div><div class="trend neutral"><?= $chiffres['visibles'] ?> visibles · <?= $chiffres['accessibles'] ?> accessibles &#9855; · <?= $chiffres['offres'] ?> au total</div></div>
             <div class="card-style icon-card"><div class="label">Part de stages</div><div class="value"><?= $chiffres['part_stages'] ?> %</div><div class="trend neutral">parmi les offres actives</div></div>
             <div class="card-style icon-card"><div class="label">Salaire moyen</div><div class="value"><?= $chiffres['salaire_moyen'] !== null ? number_format($chiffres['salaire_moyen'], 0, ',', ' ') . ' TND' : '—' ?></div><div class="trend neutral">offres actives avec salaire</div></div>
           </div>
@@ -44,7 +55,7 @@ $couleursStatut = ['en_attente' => 'var(--orange)', 'verifiee' => '#2e9e5b', 're
                 <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--blue)"></span><?= e($types['stage']) ?></span>
                 <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:3px;background:var(--orange)"></span><?= e($types['emploi']) ?></span>
               </div>
-              <div role="img" aria-label="Nombre d'offres publiées par mois sur les six derniers mois, stages et emplois" style="display:flex;align-items:flex-end;gap:14px;height:200px;padding-top:10px;border-bottom:1px solid #dfe5ef">
+              <div role="img" aria-label="Nombre d'offres publiées par mois, stages et emplois" style="display:flex;align-items:flex-end;gap:14px;height:200px;padding-top:10px;border-bottom:1px solid #dfe5ef">
                 <?php foreach ($parMois as $m): ?>
                   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
                     <small style="font-weight:800;margin-bottom:4px"><?= $m['stage'] + $m['emploi'] ?></small>
@@ -69,7 +80,22 @@ $couleursStatut = ['en_attente' => 'var(--orange)', 'verifiee' => '#2e9e5b', 're
             </div>
           </div>
 
-          <div class="row-grid cols-2 mb-30">
+          <div class="row-grid mb-30" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+            <!-- ---------- Postes accessibles (anneau) ---------- -->
+            <div class="card-style">
+              <div class="card-head"><h3>Postes accessibles &#9855;</h3><a href="index.php?page=admin-offres&amp;accessible=1">Voir</a></div>
+              <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+                <div role="img" aria-label="<?= $pa ?> % des offres actives sont accessibles" style="flex:none;width:136px;height:136px;border-radius:50%;background:conic-gradient(var(--blue) 0 <?= $pa ?>%, var(--blue-light) <?= $pa ?>% 100%);display:grid;place-items:center">
+                  <div style="width:96px;height:96px;border-radius:50%;background:var(--white);display:grid;place-items:center;font-family:var(--font-title);font-weight:800;font-size:26px;color:var(--navy)"><?= $pa ?> %</div>
+                </div>
+                <div style="display:grid;gap:8px;font-size:14px;font-weight:700">
+                  <span><?= $chiffres['accessibles'] ?> sur <?= $chiffres['actives'] ?> offre(s) active(s)</span>
+                  <span class="text-muted"><?= e($types['stage']) ?> : <?= $chiffres['accessibles_stage'] ?> · <?= e($types['emploi']) ?> : <?= $chiffres['accessibles_emploi'] ?></span>
+                </div>
+              </div>
+              <p class="text-muted" style="margin-top:14px;font-size:13px;font-weight:600">Offres ouvertes aux personnes en situation de handicap.</p>
+            </div>
+
             <!-- ---------- Top entreprises ---------- -->
             <div class="card-style">
               <div class="card-head"><h3>Entreprises qui recrutent le plus</h3></div>
@@ -88,10 +114,15 @@ $couleursStatut = ['en_attente' => 'var(--orange)', 'verifiee' => '#2e9e5b', 're
               <?php if ($topVilles === []): ?><p class="text-muted">Aucune offre active avec une ville.</p><?php endif; ?>
               <div class="bars">
                 <?php foreach ($topVilles as $b): ?>
-                  <div class="bar-row"><span><?= e($b['nom']) ?></span><div class="bar-track"><div class="bar-fill" style="width:<?= $b['largeur'] ?>%;background:var(--orange)"></div></div><span class="num"><?= $b['nb'] ?></span></div>
+                  <div class="bar-row"><span><?= e($b['nom']) ?></span><div class="bar-track"><div class="bar-fill" style="width:<?= $b['largeur'] ?>%;background:<?= $couleursNiveau[$b['niveau']] ?>"></div></div><span class="num"><?= $b['nb'] ?></span></div>
                 <?php endforeach; ?>
               </div>
-              <p class="text-muted" style="margin-top:14px;font-size:13px;font-weight:600">Nombre d'offres actives par ville (top 5).</p>
+              <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;font-size:13px;font-weight:700">
+                <?php foreach ($niveaux as $niv => $texte): ?>
+                  <span style="display:flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:50%;background:<?= $couleursNiveau[$niv] ?>"></span><?= e($texte) ?></span>
+                <?php endforeach; ?>
+              </div>
+              <p class="text-muted" style="margin-top:8px;font-size:13px;font-weight:600">Nombre d'offres actives par ville (top 5), mêmes couleurs que la carte.</p>
             </div>
           </div>
 

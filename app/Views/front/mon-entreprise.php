@@ -15,6 +15,8 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
 
 <head>
 <?php require_once __DIR__ . '/includes/head.php'; ?>
+<link rel="stylesheet" href="app/Views/front/assets/css/recrutement.css">
+<script src="app/Views/front/assets/js/recrutement-theme.js"></script>
 </head>
 
 <body>
@@ -41,7 +43,7 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
                 <p role="alert" style="max-width:820px;margin:0 auto 20px;border-radius:10px;padding:10px 14px;font-weight:600;<?= $flash['type'] === 'success' ? 'background:#e7f6ec;color:#1e7a43' : 'background:#fdecec;color:#a61b1b' ?>"><?= e($flash['message']) ?></p>
             <?php endif; ?>
 
-            <form id="form-entreprise" class="card form-card" action="index.php?page=mon-entreprise" method="post" novalidate style="margin-bottom:28px">
+            <form id="form-entreprise" class="card form-card" action="index.php?page=mon-entreprise" method="post" enctype="multipart/form-data" novalidate style="margin-bottom:28px">
                 <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px">
                     <h3><?= $entreprise === null ? 'Enregistrer mon entreprise' : 'Informations de l\'entreprise' ?></h3>
@@ -57,6 +59,23 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
                     <p style="margin-bottom:16px;color:#a61b1b;font-weight:600">Ton entreprise a été refusée. Corrige ses informations et enregistre-les : elle repassera en vérification.</p>
                 <?php endif; ?>
                 <div class="form-grid">
+                    <!-- Métier avancé : logo de l'entreprise (PNG, JPG ou WEBP, 2 Mo maximum) -->
+                    <div class="form-group full champ-logo">
+                        <label for="logo">Logo de l'entreprise <span class="text-muted">(facultatif)</span></label>
+                        <div class="zone-logo">
+                            <div class="apercu-logo" data-apercu-logo>
+                                <?php $logoNom = $old['nom'] !== '' ? $old['nom'] : 'Mon entreprise'; $logoFichier = $entreprise?->getLogo(); $logoTaille = 72; require __DIR__ . '/logo-entreprise.php'; ?>
+                            </div>
+                            <div class="zone-logo-champs">
+                                <input id="logo" name="logo" type="file" class="form-control" accept="image/png,image/jpeg,image/webp" data-taille-max="<?= App\Controllers\EntrepriseController::LOGO_TAILLE_MAX ?>">
+                                <span class="form-help">PNG, JPG ou WEBP · 2 Mo maximum. Sans logo, le rond avec les initiales est affiché.</span>
+                                <?php if ($entreprise?->getLogo() !== null): ?>
+                                    <label class="case-logo"><input type="checkbox" name="supprimer_logo" value="1"> Supprimer le logo actuel</label>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?= $err('logo') ?>
+                    </div>
                     <div class="form-group full">
                         <label for="nom">Nom de l'entreprise</label>
                         <input id="nom" name="nom" type="text" class="form-control" maxlength="100" value="<?= e($old['nom']) ?>">
@@ -95,7 +114,7 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
                         <?php endif; ?>
                         <?php foreach ($offres as $o): /** @var App\Models\OffreEmploi $o */ ?>
                         <tr>
-                            <td><strong><a href="index.php?page=offre-detail&amp;id=<?= $o->getId() ?>"><?= e($o->getTitre()) ?></a></strong><small><?= e($o->getVille() ?? '—') ?> · <?= e($o->getSalaireTexte()) ?></small></td>
+                            <td><strong><a href="index.php?page=offre-detail&amp;id=<?= $o->getId() ?>"><?= e($o->getTitre()) ?></a></strong><?= $o->isAccessible() ? ' <span title="Poste accessible">&#9855;</span>' : '' ?><small><?= e($o->getVille() ?? '—') ?> · <?= e($o->getSalaireTexte()) ?></small></td>
                             <td><span class="badge <?= $o->getTypeOffre() === 'stage' ? 'badge-orange' : '' ?>"><?= e($types[$o->getTypeOffre()] ?? $o->getTypeOffre()) ?></span></td>
                             <td class="nowrap"><?= e(dateFr($o->getDateLimite())) ?><?= $o->estExpiree() ? '<small>Expirée</small>' : '' ?></td>
                             <td>
@@ -129,6 +148,7 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
 <?php require_once __DIR__ . '/includes/scripts.php'; ?>
+<script src="app/Views/front/assets/js/recrutement.js"></script>
 </body>
 
 </html>

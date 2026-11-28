@@ -1,10 +1,14 @@
 <?php
 /**
  * Vue : liste des entreprises (back office, module P3).
- * Reçoit : $entreprises (Entreprise[]), $stats, $filtres, $statuts, $flash, $csrfToken
+ * Reçoit : $pagination (items Entreprise[], page, pages, total), $stats, $filtres, $statuts, $tris, $flash, $csrfToken
+ * Métiers simples : recherche, filtre par statut, tri, pagination (comme la liste des offres)
  */
+$entreprises = $pagination['items'];
+$actifs    = array_filter($filtres, fn($v, $k) => $v !== '' && !($k === 'tri' && $v === 'statut'), ARRAY_FILTER_USE_BOTH);
+$urlPage   = fn(int $n) => 'index.php?' . http_build_query(['page' => 'admin-entreprises'] + $actifs + ['p' => $n]);
 $badges    = ['en_attente' => 'warning-btn', 'verifiee' => 'success-btn', 'refusee' => 'danger-btn'];
-$actionUrl = 'index.php?' . http_build_query(['page' => 'admin-entreprises'] + array_filter($filtres));
+$actionUrl = 'index.php?' . http_build_query(['page' => 'admin-entreprises'] + $actifs + ['p' => $pagination['page']]);
 ?>
       <!-- ========== section start ========== -->
       <section class="section">
@@ -56,8 +60,14 @@ $actionUrl = 'index.php?' . http_build_query(['page' => 'admin-entreprises'] + a
                       <option value="<?= e($valeur) ?>"<?= $filtres['statut'] === $valeur ? ' selected' : '' ?>><?= e($libelle) ?></option>
                     <?php endforeach; ?>
                   </select>
+                  <label for="f-tri" style="position:absolute;left:-9999px">Trier par</label>
+                  <select id="f-tri" name="tri" class="form-control js-autosubmit" style="width:auto">
+                    <?php foreach ($tris as $valeur => $libelle): ?>
+                      <option value="<?= e($valeur) ?>"<?= $filtres['tri'] === $valeur ? ' selected' : '' ?>>Tri : <?= e($libelle) ?></option>
+                    <?php endforeach; ?>
+                  </select>
                   <button type="submit" class="main-btn light-btn btn-sm">Rechercher</button>
-                  <?php if (array_filter($filtres)): ?><a href="index.php?page=admin-entreprises" class="main-btn light-btn btn-sm">Effacer</a><?php endif; ?>
+                  <?php if ($actifs !== []): ?><a href="index.php?page=admin-entreprises" class="main-btn light-btn btn-sm">Effacer</a><?php endif; ?>
                 </form>
               </div>
               <div class="table-wrapper">
@@ -72,7 +82,7 @@ $actionUrl = 'index.php?' . http_build_query(['page' => 'admin-entreprises'] + a
                     <?php foreach ($entreprises as $ent): /** @var App\Models\Entreprise $ent */ $id = $ent->getId(); ?>
                     <tr>
                       <td class="text-muted"><?= $id ?></td>
-                      <td class="min-width"><strong><?= e($ent->getNom()) ?></strong><br><small class="text-muted"><?= e($ent->getSiteWeb() ?? '—') ?></small></td>
+                      <td class="min-width"><div style="display:flex;align-items:center;gap:10px"><?php $logoNom = $ent->getNom(); $logoFichier = $ent->getLogo(); $logoTaille = 36; require __DIR__ . '/../../front/logo-entreprise.php'; ?><div><strong><?= e($ent->getNom()) ?></strong><br><small class="text-muted"><?= e($ent->getSiteWeb() ?? '—') ?></small></div></div></td>
                       <td class="min-width"><?= e($ent->getRecruteur()) ?><br><small class="text-muted"><?= e($ent->getRecruteurEmail()) ?></small></td>
                       <td><?= e($ent->getSecteur() ?? '—') ?></td>
                       <td class="nowrap"><?= e($ent->getVille() ?? '—') ?></td>
@@ -99,6 +109,17 @@ $actionUrl = 'index.php?' . http_build_query(['page' => 'admin-entreprises'] + a
                   </tbody>
                 </table>
               </div>
+              <?php if ($pagination['pages'] > 1): ?>
+              <!-- Métier simple : pagination -->
+              <nav aria-label="Pages des entreprises" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:16px">
+                <small class="text-muted" style="margin-right:8px"><?= $pagination['total'] ?> entreprises · page <?= $pagination['page'] ?> sur <?= $pagination['pages'] ?></small>
+                <?php if ($pagination['page'] > 1): ?><a href="<?= e($urlPage($pagination['page'] - 1)) ?>" class="main-btn light-btn btn-sm">&larr;</a><?php endif; ?>
+                <?php for ($n = 1; $n <= $pagination['pages']; $n++): ?>
+                  <a href="<?= e($urlPage($n)) ?>" class="main-btn btn-sm <?= $n === $pagination['page'] ? 'primary-btn' : 'light-btn' ?>"<?= $n === $pagination['page'] ? ' aria-current="page"' : '' ?>><?= $n ?></a>
+                <?php endfor; ?>
+                <?php if ($pagination['page'] < $pagination['pages']): ?><a href="<?= e($urlPage($pagination['page'] + 1)) ?>" class="main-btn light-btn btn-sm">&rarr;</a><?php endif; ?>
+              </nav>
+              <?php endif; ?>
             </div>
           </div>
         </div>

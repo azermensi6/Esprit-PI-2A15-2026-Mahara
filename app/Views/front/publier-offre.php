@@ -15,6 +15,8 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
 
 <head>
 <?php require_once __DIR__ . '/includes/head.php'; ?>
+<link rel="stylesheet" href="app/Views/front/assets/css/recrutement.css">
+<script src="app/Views/front/assets/js/recrutement-theme.js"></script>
 </head>
 
 <body>
@@ -76,6 +78,11 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
                         <?= $err('date_limite') ?>
                     </div>
                     <div class="form-group full">
+                        <!-- Métier avancé : poste accessible aux personnes en situation de handicap -->
+                        <label class="check"><input type="checkbox" name="accessible" value="1"<?= $old['accessible'] === '1' ? ' checked' : '' ?>> &#9855; Ce poste est accessible aux personnes en situation de handicap</label>
+                        <span class="form-help">Locaux adaptés, poste aménageable ou télétravail possible. L'offre aura un badge et apparaîtra dans le filtre « Postes accessibles ».</span>
+                    </div>
+                    <div class="form-group full">
                         <label for="description">Description</label>
                         <textarea id="description" name="description" class="form-control" rows="6" maxlength="3000" data-compteur="compteur" placeholder="Missions, profil recherché, durée du stage…"><?= e($old['description']) ?></textarea>
                         <span class="form-help"><span id="compteur">0</span> / 3000 caractères (20 minimum) · L'offre est publiée au nom de ton entreprise : <?= e($entreprise->getNom()) ?><?= $entreprise->getStatut() !== 'verifiee' ? ' (' . e(mb_strtolower($statuts[$entreprise->getStatut()] ?? '')) . ' : l\'offre sera visible après vérification)' : '' ?>.</span>
@@ -95,6 +102,7 @@ $err    = fn(string $champ) => '<small data-erreur="' . $champ . '" style="color
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
 <?php require_once __DIR__ . '/includes/scripts.php'; ?>
+<script src="app/Views/front/assets/js/recrutement.js"></script>
 </body>
 
 </html>

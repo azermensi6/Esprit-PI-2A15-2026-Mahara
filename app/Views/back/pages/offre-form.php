@@ -71,6 +71,10 @@ $titre  = $id > 0 ? 'Modifier une offre' : 'Ajouter une offre';
                   <?= $err('date_limite') ?>
                 </div>
                 <div class="input-style full">
+                  <!-- Métier avancé : poste accessible aux personnes en situation de handicap -->
+                  <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" name="accessible" value="1" style="width:auto"<?= $old['accessible'] === '1' ? ' checked' : '' ?>> &#9855; Poste accessible aux personnes en situation de handicap</label>
+                </div>
+                <div class="input-style full">
                   <label for="description">Description</label>
                   <textarea id="description" name="description" rows="6" maxlength="3000" data-compteur="compteur"><?= e($old['description']) ?></textarea>
                   <small><span id="compteur">0</span> / 3000 caractères (20 minimum)</small>
