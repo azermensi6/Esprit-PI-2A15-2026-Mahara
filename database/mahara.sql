@@ -83,6 +83,7 @@ CREATE TABLE entreprise (
     secteur       VARCHAR(60),
     ville         VARCHAR(60),
     site_web      VARCHAR(255),
+    logo          VARCHAR(255) NULL,                 -- fichier du logo (uploads/logos), NULL = initiales
     statut        ENUM('en_attente','verifiee','refusee') NOT NULL DEFAULT 'en_attente',  -- vérifiée par l'admin
     id_recruteur  INT NOT NULL,                      -- lien avec utilisateur
     FOREIGN KEY (id_recruteur) REFERENCES utilisateur(id_utilisateur) ON DELETE CASCADE
@@ -95,6 +96,7 @@ CREATE TABLE offre_emploi (
     description      TEXT,
     ville            VARCHAR(60),
     salaire          DECIMAL(10,2),                  -- par mois, en TND (NULL si non précisé)
+    accessible       TINYINT(1) NOT NULL DEFAULT 0,  -- 1 = poste accessible aux personnes en situation de handicap
     date_publication DATE NOT NULL,
     date_limite      DATE,
     id_entreprise    INT NOT NULL,                   -- jointure du module

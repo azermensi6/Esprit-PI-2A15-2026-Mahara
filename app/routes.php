@@ -27,10 +27,11 @@ return [
     'mes-missions'            => 'PageController@mesMissions',
 
     // ---------- P3 · Recrutement ----------
-    'offres'                  => 'PageController@offres',
-    'offre-detail'            => 'PageController@offreDetail',
-    'mon-entreprise'          => 'PageController@monEntreprise',
-    'publier-offre'           => 'PageController@publierOffre',
+    'offres'                  => 'OffreController@liste',
+    'offre-detail'            => 'OffreController@detail',
+    'entreprise'              => 'EntrepriseController@fiche',
+    'mon-entreprise'          => 'EntrepriseController@monEntreprise',
+    'publier-offre'           => 'OffreController@formulaire',
 
     // ---------- P4 · Candidatures et paiements ----------
     'postuler'                => 'PageController@postuler',
@@ -66,8 +67,11 @@ return [
     'admin-mission-form'      => 'AdminController@missionForm',
 
     // ---------- Back office · P3 ----------
-    'admin-entreprises'       => 'AdminController@entreprises',
-    'admin-entreprise-form'   => 'AdminController@entrepriseForm',
+    'admin-entreprises'       => 'EntrepriseController@liste',
+    'admin-entreprise-form'   => 'EntrepriseController@formulaire',
+    'admin-offres'            => 'OffreController@adminListe',
+    'admin-offre-form'        => 'OffreController@adminFormulaire',
+    'admin-statistiques-recrutement' => 'OffreController@statistiques',
 
     // ---------- Back office · P4 ----------
     'admin-paiements'         => 'AdminController@paiements',

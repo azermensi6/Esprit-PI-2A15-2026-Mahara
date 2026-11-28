@@ -114,7 +114,54 @@
                     : reponse.length > 2000 ? 'La réponse ne doit pas dépasser 2000 caractères.' : '');
   });
 
-  /* ---------- Compteur de caractères (description d'une réclamation) ---------- */
+  /* ---------- Entreprise (front office « Mon entreprise » et back office) ---------- */
+  var VILLE = /^\p{L}[\p{L} '-]{1,59}$/u;   // 2 à 60 lettres
+  var URL   = /^https?:\/\/[^\s.]+\.[^\s]+$/i;
+
+  valider('form-entreprise', function (val, brut, erreur, form) {
+    erreur('nom', longueur(val('nom'), 2, 100) ? '' : 'Le nom doit contenir entre 2 et 100 caractères.');
+    var secteur = val('secteur');
+    erreur('secteur', secteur === '' || longueur(secteur, 2, 60) ? '' : 'Le secteur doit contenir entre 2 et 60 caractères.');
+    var ville = val('ville');
+    erreur('ville', ville === '' || VILLE.test(ville) ? '' : 'La ville doit contenir entre 2 et 60 lettres.');
+    var site = val('site_web');
+    erreur('site_web', site === '' || (URL.test(site) && site.length <= 255) ? '' : 'Le site web doit être une adresse valide commençant par http:// ou https://');
+    if (form.elements.id_recruteur) {
+      erreur('id_recruteur', val('id_recruteur') !== '' ? '' : 'Choisissez un recruteur.');
+    }
+    // Logo (facultatif) : PNG, JPG ou WEBP, 2 Mo maximum — vérifié aussi en PHP
+    var logo = form.elements.logo && form.elements.logo.files ? form.elements.logo.files[0] : null;
+    if (form.elements.logo) {
+      var max = Number(form.elements.logo.dataset.tailleMax || 2097152);
+      erreur('logo', !logo ? ''
+        : !/^image\/(png|jpeg|webp)$/.test(logo.type) ? 'Le logo doit être une image PNG, JPG ou WEBP.'
+        : logo.size > max ? 'Le logo ne doit pas dépasser 2 Mo.'
+        : '');
+    }
+  });
+
+  /* ---------- Offre d'emploi (front office « Publier une offre » et back office) ---------- */
+  valider('form-offre', function (val, brut, erreur, form) {
+    erreur('titre', longueur(val('titre'), 5, 120) ? '' : 'L\'intitulé doit contenir entre 5 et 120 caractères.');
+    erreur('type_offre', val('type_offre') !== '' ? '' : 'Choisissez le type d\'offre.');
+    if (form.elements.id_entreprise) {
+      erreur('id_entreprise', val('id_entreprise') !== '' ? '' : 'Choisissez l\'entreprise qui propose l\'offre.');
+    }
+    var ville = val('ville');
+    erreur('ville', ville === '' || VILLE.test(ville) ? '' : 'La ville doit contenir entre 2 et 60 lettres.');
+    var salaire = val('salaire');
+    erreur('salaire', salaire === '' || (!isNaN(salaire) && Number(salaire) >= 0 && Number(salaire) <= 50000) ? '' : 'Le salaire doit être un nombre entre 0 et 50000 TND (vide si à négocier).');
+    // Règle métier : date limite obligatoire, au maximum 90 jours après la publication
+    var limite = val('date_limite'), min = form.dataset.minDate || '', max = form.dataset.maxDate || '';
+    var fr = function (d) { return d.split('-').reverse().join('/'); };
+    erreur('date_limite', limite === '' ? 'Choisissez une date limite.'
+      : limite < min ? 'La date limite ne peut pas être avant le ' + fr(min) + '.'
+      : (max !== '' && limite > max) ? 'Une offre reste publiée au maximum 90 jours : date limite au plus tard le ' + fr(max) + '.'
+      : '');
+    erreur('description', longueur(val('description'), 20, 3000) ? '' : 'La description doit contenir entre 20 et 3000 caractères.');
+  });
+
+  /* ---------- Compteur de caractères (réclamation, offre d'emploi) ---------- */
   var texte = document.querySelector('[data-compteur]');
   if (texte) {
     var compteur = document.getElementById(texte.dataset.compteur);
